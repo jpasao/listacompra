@@ -1,6 +1,7 @@
 <?php
 
 require 'config.php';
+require 'sendevent.php';
 
 spl_autoload_register(function($filename) 
 {
@@ -14,7 +15,7 @@ class API extends REST
 
     function __construct()
     {       
-        $this->openDBConnection();                 
+        $this->openDBConnection();                         
     }
 
     private function openDBConnection()
@@ -33,9 +34,7 @@ class API extends REST
     public function processApi()
     {
         $request = trim($_REQUEST['x']);
-        if ($request == 'sendevent.php') {
-            SendEvent::sendList('');
-        } else {
+        if ($request != 'sendevent.php') {
             $bar = '/';
             $queryWithoutParams = strpos($request, $bar);
             

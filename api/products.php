@@ -8,7 +8,7 @@ spl_autoload_register(function($filename)
 class Products extends API
 {
     public function callMethod($filter)
-    {        
+    {            
         switch ($this->get_request_method()) {
             case 'GET':
                 $this->getProducts($filter);
@@ -82,6 +82,7 @@ class Products extends API
             $query = $this->db->prepare($sql);
             $query->execute($params);
             if ($query) {
+                $this->incrementValueOperation();
                 $this->response('', 200);
             }            
             $this->response('', 204);  
@@ -104,17 +105,12 @@ class Products extends API
             $params = array(':check' => $data['isChecked'], ':productId' => $data['productId']); 
             $query = $this->db->prepare($sql);
             $query->execute($params);
-            $sentEvent = false;
+            
             if ($query) {
-                $productList = $this->getRows(null);
-                if ($productList->rowCount() > 0) {  
-                    $jsonData = json_encode($productList->fetchAll());          
-                    SendEvent::sendList($jsonData);   
-                    $sentEvent = true;         
-                }
-                if ($sentEvent == false) $this->response('', 200);
+                $this->incrementValueOperation();
+                $this->response('', 200);
             }            
-            if ($sentEvent == false) $this->response('', 204);  
+            $this->response('', 204);  
         } catch (PDOException $e) {
             $message = Utils::buildError('PDO markProduct', $e);
             $this->response($message, 500);                        
@@ -122,5 +118,13 @@ class Products extends API
             $message = Utils::buildError('markProduct', $e);
             $this->response($message, 500);            
         }
+    }
+
+    // Update operation value by 1 and write to session
+    private function incrementValueOperation()
+    {
+        $sql = "UPDATE operations SET operationId = operationId + 1";
+        $query = $this->db->prepare($sql);
+        $query->execute();
     }
 }

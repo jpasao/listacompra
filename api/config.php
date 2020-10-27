@@ -22,3 +22,9 @@ define('DB_NAME', 'recetas');
 define('DB_USER', 'invitado');
 define('DB_PASS', 'invitado');
 define('DB_CHARSET', 'utf8');
+// Loop Constants
+define ('LOOP_INTERVAL', 3);
+define ('EXPIRATION_TIME', 7200);
+define ('TIME_LIMIT', 30);
+
+
