@@ -11,7 +11,7 @@ spl_autoload_register(function($filename)
 class API extends REST 
 {
     public $db = null;
-    private $endPoints = array('product');
+    private $endPoints = array('product', 'author');
 
     function __construct()
     {       
@@ -81,7 +81,12 @@ class API extends REST
     private function product($filter){
         $products = new Products();
         $products->callMethod($filter);
-    }    
+    }  
+    
+    private function author($filter){
+        $authors = new Authors();
+        $authors->callMethod($filter);
+    }  
 }
 
 // Start app

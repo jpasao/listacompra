@@ -53,7 +53,7 @@ class Products extends API
             // Empty query throws exception
             if ($filter == null) $filter = '';
 
-            $sql = "SELECT ingredientId AS id, name, isChecked FROM ingredients WHERE isProduct = 1 AND LOWER(name) LIKE CONCAT('%', :filter, '%') ORDER BY isChecked, name";
+            $sql = "SELECT ingredientId AS id, name, isChecked, quantity FROM ingredients WHERE isProduct = 1 AND LOWER(name) LIKE CONCAT('%', :filter, '%') ORDER BY isChecked, name";
             
             $query = $this->db->prepare($sql);      
             $params = array(':filter' => $filter);      
@@ -71,18 +71,21 @@ class Products extends API
         $sql;
         try {
             $name = Utils::getValue('name', $isPost);
+            $authorId = Utils::getValue('authorId', $isPost);
+            $quantity = Utils::getValue('quantity', $isPost);
+            $productId = -1;
             if ($isPost){
-                $sql = "INSERT INTO ingredients (name, isProduct, isChecked) VALUES (:name, 1, 0)";
+                $sql = "INSERT INTO ingredients (name, isProduct, isChecked, quantity) VALUES (:name, 1, 0, 1)";
                 $params = array(':name' => $name); 
             } else {
                 $productId = Utils::getValue('productId', $isPost);
-                $sql = "UPDATE ingredients SET name = :name WHERE ingredientId = :productId";
-                $params = array(':name' => $name, ':productId' => $productId); 
+                $sql = "UPDATE ingredients SET name = :name, quantity = :quantity WHERE ingredientId = :productId";
+                $params = array(':name' => $name, ':productId' => $productId, ':quantity' => $quantity); 
             }
             $query = $this->db->prepare($sql);
             $query->execute($params);
             if ($query) {
-                $this->incrementValueOperation();
+                $this->incrementValueOperation($authorId, $productId, $isPost ? 2 : 3);
                 $this->response('', 200);
             }            
             $this->response('', 204);  
@@ -100,14 +103,14 @@ class Products extends API
     {        
         try {
             $data = Utils::getJsonContent();
-
-            $sql = "UPDATE ingredients SET isChecked = :check WHERE ingredientId = :productId";
+            
+            $sql = "UPDATE ingredients SET isChecked = :check, quantity = 1 WHERE ingredientId = :productId";
             $params = array(':check' => $data['isChecked'], ':productId' => $data['productId']); 
             $query = $this->db->prepare($sql);
             $query->execute($params);
             
             if ($query) {
-                $this->incrementValueOperation();
+                $this->incrementValueOperation($data['authorId'], $data['productId'], $data['isChecked']);
                 $this->response('', 200);
             }            
             $this->response('', 204);  
@@ -120,11 +123,12 @@ class Products extends API
         }
     }
 
-    // Update operation value by 1 and write to session
-    private function incrementValueOperation()
+    // Update operation value by 1
+    private function incrementValueOperation($authorId, $productId, $typeId)
     {
-        $sql = "UPDATE operations SET operationId = operationId + 1";
+        $sql = "UPDATE operations SET operationId = operationId + 1, authorId = :authorId, productId = :productId, typeId = :typeId";
+        $params = array(':authorId' => $authorId, ':productId' => $productId, ':typeId' => $typeId); 
         $query = $this->db->prepare($sql);
-        $query->execute();
+        $query->execute($params);
     }
 }

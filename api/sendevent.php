@@ -41,7 +41,9 @@ function startEvent()
     
             if ($lastOperationId != $latestOperationId) {
                 $lastOperationId = $latestOperationId;
-                echo "data: update" . PHP_EOL . PHP_EOL;     
+                $operationData = getOperationData();
+                echo 'data: {"authorId":' . $operationData->authorId . ',"productId":' . $operationData->productId . ',"typeId":' . $operationData->typeId . '}';
+                echo PHP_EOL . PHP_EOL;   
             }
         }
     
@@ -72,9 +74,19 @@ function openDBConnection()
 function getValueOperation()
 {
     global $db;
-    $sql = "SELECT operationId, authorId, productId, typeId FROM operations LIMIT 1";
+    $sql = "SELECT operationId FROM operations LIMIT 1";
     $query = $db->prepare($sql);                 
     $query->execute(); 
     $idArray = $query->fetchAll();
     return $idArray['0']->operationId;
+}
+
+function getOperationData()
+{
+    global $db;
+    $sql = "SELECT operationId, authorId, productId, typeId FROM operations LIMIT 1";
+    $query = $db->prepare($sql);                 
+    $query->execute(); 
+    $idArray = $query->fetchAll();
+    return $idArray['0'];
 }

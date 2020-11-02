@@ -36,8 +36,14 @@ class Authors extends API
             $request->bindValue(1, $authorId);
             $request->execute();        
             
-            if ($request->rowCount() > 0) {            
-                $this->buildResponse($request);            
+            if ($request->rowCount() > 0) {           
+                $rows = array();
+
+                while ($request->columnCount()) {
+                    $rows[] = $request->fetchAll(PDO::FETCH_ASSOC);
+                    $request->nextRowset();
+                }
+                $this->buildResponse($rows[0]);            
             }
             $this->response('', 204);  
         } catch (PDOException $e) {
