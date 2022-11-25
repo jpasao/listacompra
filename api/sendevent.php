@@ -4,7 +4,7 @@ $db = null;
 $lastOperationId = null;
 
 // no normal requests
-if ($_SERVER['HTTP_ACCEPT'] !== 'text/event-stream') {
+if (isset($_SERVER['HTTP_ACCEPT']) == false || $_SERVER['HTTP_ACCEPT'] !== 'text/event-stream') {
     return;
 } else {
     require_once 'config.php';

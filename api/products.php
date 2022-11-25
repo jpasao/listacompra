@@ -85,7 +85,7 @@ class Products extends API
             $query = $this->db->prepare($sql);
             $query->execute($params);
             if ($query) {
-                $this->incrementValueOperation($authorId, $productId, $isPost ? 2 : 3);
+                //$this->incrementValueOperation($authorId, $productId, $isPost ? 2 : 3);
                 $this->response('', 200);
             }            
             $this->response('', 204);  
@@ -110,7 +110,7 @@ class Products extends API
             $query->execute($params);
             
             if ($query) {
-                $this->incrementValueOperation($data['authorId'], $data['productId'], $data['isChecked']);
+                //$this->incrementValueOperation($data['authorId'], $data['productId'], $data['isChecked']);
                 $this->response('', 200);
             }            
             $this->response('', 204);  
@@ -126,9 +126,9 @@ class Products extends API
     // Update operation value by 1
     private function incrementValueOperation($authorId, $productId, $typeId)
     {
-        $sql = "UPDATE operations SET operationId = operationId + 1, authorId = :authorId, productId = :productId, typeId = :typeId";
-        $params = array(':authorId' => $authorId, ':productId' => $productId, ':typeId' => $typeId); 
-        $query = $this->db->prepare($sql);
-        $query->execute($params);
+        // $sql = "UPDATE operations SET operationId = operationId + 1, authorId = :authorId, productId = :productId, typeId = :typeId";
+        // $params = array(':authorId' => $authorId, ':productId' => $productId, ':typeId' => $typeId); 
+        // $query = $this->db->prepare($sql);
+        // $query->execute($params);
     }
 }
