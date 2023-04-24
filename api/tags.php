@@ -1,6 +1,6 @@
 <?php
 
-spl_autoload_register(function($filename) 
+spl_autoload_register(function ($filename) 
 {
     require_once strtolower($filename) . '.php';
 });
@@ -8,14 +8,14 @@ spl_autoload_register(function($filename)
 class Tags extends API
 {
     public function callMethod()
-    {        
+    {
         switch ($this->get_request_method()) {
             case 'GET':
                 $this->getTags();
                 break;
             case 'POST':
                 $this->saveTag(true);
-                break;                
+                break;
             case 'PUT':
                 $this->saveTag(false);
                 break;
@@ -32,15 +32,15 @@ class Tags extends API
     {
         try {
             $request = $this->db->prepare('CALL TagsData()');
-            $request->execute();        
+            $request->execute();
             
-            if ($request->rowCount() > 0) {            
-                $this->buildResponse($request);             
+            if ($request->rowCount() > 0) {
+                $this->buildResponse($request);
             }
             $this->response('', 204);
         } catch (PDOException $e) {
             $message = Utils::buildError('PDO getTags', $e);
-            $this->response($message, 500);              
+            $this->response($message, 500);
         } catch (Exception $e) {
             $message = Utils::buildError('getTags', $e);
             $this->response($message, 500);
@@ -48,7 +48,7 @@ class Tags extends API
     }
 
     public function saveTag($isPost)
-    { 
+    {
         try {
             $tagId = Utils::getValue('tagId', $isPost);
             $name = Utils::getValue('name', $isPost);
@@ -58,12 +58,12 @@ class Tags extends API
             $request->execute();
             
             if ($request) {
-                $this->response('', 200);     
+                $this->response('', 200);
             }
             $this->response('', 204);
         } catch (PDOException $e) {
             $message = Utils::buildError('PDO saveTag', $e);
-            $this->response($message, 500);                   
+            $this->response($message, 500);
         } catch (Exception $e) {
             $message = Utils::buildError('saveTag', $e);
             $this->response($message, 500);
@@ -79,7 +79,7 @@ class Tags extends API
             $request->execute();
         } catch (PDOException $e) {
             $message = Utils::buildError('PDO deleteTag', $e);
-            $this->response($message, 500);                   
+            $this->response($message, 500);
         } catch (Exception $e) {
             $message = Utils::buildError('deleteTag', $e);
             $this->response($message, 500);

@@ -1,6 +1,6 @@
 <?php
 
-spl_autoload_register(function($filename)
+spl_autoload_register(function ($filename)
 {
     require_once strtolower($filename) . '.php';
 });
@@ -8,7 +8,7 @@ spl_autoload_register(function($filename)
 class Ingredients extends API
 {
     public function callMethod()
-    {        
+    {
         switch ($this->get_request_method()) {
             case 'GET':
                 $this->getIngredients();
@@ -32,22 +32,22 @@ class Ingredients extends API
     {
         try {
             $request = $this->db->prepare('CALL IngredientsData()');
-            $request->execute();        
+            $request->execute();
             
-            if ($request->rowCount() > 0) {            
-                $this->buildResponse($request);            
+            if ($request->rowCount() > 0) {
+                $this->buildResponse($request);
             }
-            $this->response('', 204);  
+            $this->response('', 204);
         } catch (PDOException $e) {
             $message = Utils::buildError('PDO getIngredients', $e);
-            $this->response($message, 500);                        
+            $this->response($message, 500);
         } catch (Exception $e) {
             $message = Utils::buildError('getIngredients', $e);
-            $this->response($message, 500);            
+            $this->response($message, 500);
         }
     }
 
-    public function saveIngredient($isPost) 
+    public function saveIngredient($isPost)
     {
         try {
             $ingredientId = Utils::getValue('ingredientId', $isPost);

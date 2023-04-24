@@ -2,9 +2,11 @@
 
 class Utils
 { 
+    private $phpInput = 'php://input';
+
     public static function buildError($endPoint, $exception)
     {
-        return 'Excepción en ' . $endPoint . ': ' . $exception->getMessage();  
+        return 'Excepción en ' . $endPoint . ': ' . $exception->getMessage();
     }
 
     public static function getValue($varName, $isPost)
@@ -14,7 +16,7 @@ class Utils
         if ($isPost) {
             $arr = $_POST;
         } else {
-            parse_str(file_get_contents("php://input"), $_PUT);
+            parse_str(file_get_contents($phpInput), $_PUT);
             $arr = $_PUT;
         }
         
@@ -24,12 +26,24 @@ class Utils
         return $res;
     }
 
+    public static function getPATCHValue($varName)
+    {
+        $res = null;
+
+        parse_str(file_get_contents($phpInput), $_PATCH);
+        
+        if (isset($_PATCH[$varName]) && empty($_PATCH[$varName]) === false) {
+            $res = $_PATCH[$varName];
+        }
+        return $res;
+    }
+
     public static function getJsonContent()
     {
         return json_decode(file_get_contents("php://input"), true);
-    } 
+    }
 
-    public static function GetLastInsertedId($db)
+    public static function getLastInsertedId($db)
     {
         $query = $db->query('SELECT LAST_INSERT_ID()');
         return $query->fetchColumn();

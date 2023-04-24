@@ -1,6 +1,6 @@
 <?php
 
-spl_autoload_register(function($filename)
+spl_autoload_register(function ($filename)
 {
     require_once strtolower($filename) . '.php';
 });
@@ -8,22 +8,22 @@ spl_autoload_register(function($filename)
 class Recipes extends API
 {
     public function callMethod($id)
-    {        
+    {
         switch ($this->get_request_method()) {
             case 'GET':
                 if ($id > 0) {
                     $this->getRecipe($id);
                 } else {
                     $this->getRecipeList();
-                }                
+                }
                 break;
-            case 'POST':                                
+            case 'POST':
             case 'PUT':
                 $this->saveRecipe();
                 break;
             case 'DELETE':
                 $this->deleteRecipe();
-                break;                
+                break;
             default:
                 $this->response('', 204);
                 break;
@@ -39,13 +39,13 @@ class Recipes extends API
     
             $request = $this->db->prepare("CALL RecipeDetail(?)");
             $request->bindParam(1, $recipeId);
-            $request->execute();      
+            $request->execute();
     
-            if ($request->rowCount() > 0) { 
-                $this->buildResponse($request);                     
+            if ($request->rowCount() > 0) {
+                $this->buildResponse($request);
             }
-            $this->response('', 204);            
-        } catch(Exception $e) {
+            $this->response('', 204);
+        } catch (Exception $e) {
             $message = Utils::buildError('getRecipe', $e);
             $this->response($message, 500);
         }
@@ -55,19 +55,19 @@ class Recipes extends API
     {
         try {
             $request = $this->db->prepare('CALL RecipeData()');
-            $request->execute();        
+            $request->execute();
             
-            if ($request->rowCount() > 0) {            
-                $this->buildResponse($request);            
+            if ($request->rowCount() > 0) {
+                $this->buildResponse($request);
             }
-            $this->response('', 204);  
+            $this->response('', 204);
         } catch (PDOException $e) {
             $message = Utils::buildError('PDO getRecipeList', $e);
-            $this->response($message, 500);                        
+            $this->response($message, 500);
         } catch (Exception $e) {
             $message = Utils::buildError('getRecipeList', $e);
-            $this->response($message, 500);            
-        }        
+            $this->response($message, 500);
+        }
     }
 
     public function deleteRecipe()
@@ -84,11 +84,11 @@ class Recipes extends API
             $message = Utils::buildError('deleteRecipe', $e);
             $this->response($message, 500);
         }
-    }    
+    }
 
     public function saveRecipe()
     {
-        try {            
+        try {
             // Content in JSON array format
             $recipeData = Utils::getJsonContent();
             // Create strings with each part
@@ -124,7 +124,7 @@ class Recipes extends API
             if ($request) {
                 $this->response('', 200);
             }
-            $this->response('', 204);            
+            $this->response('', 204);
         } catch (PDOException $e) {
             $message = Utils::buildError('PDO saveRecipe', $e);
             $this->response($message, 500);
@@ -140,22 +140,24 @@ class Recipes extends API
 
         switch ($area) {
             case 'E':
-                $arr = $recipeData['tags'];                
+                $arr = $recipeData['tags'];
                 break;
             case 'I':
-                $arr = $recipeData['ingredients'];                
-                break;   
+                $arr = $recipeData['ingredients'];
+                break;
             case 'P':
-                $arr = $recipeData['steps'];                
-                break; 
+                $arr = $recipeData['steps'];
+                break;
             case 'N':
-                $arr = $recipeData['notes'];                
-                break;      
+                $arr = $recipeData['notes'];
+                break;
             case 'F':
-                $arr = $recipeData['images'];                
-                break;                                                               
-        }   
-        return $this->processObject($arr, $subArea);     
+                $arr = $recipeData['images'];
+                break;
+            default:
+                break;
+        }
+        return $this->processObject($arr, $subArea);
     }
 
     private function processObject($arr, $subArea)
@@ -163,10 +165,10 @@ class Recipes extends API
         $sep = '¬';
         $dataString = '';
         
-        array_walk_recursive($arr, function($value, $key) use(&$dataString, &$sep, &$subArea){
+        array_walk_recursive($arr, function ($value, $key) use (&$dataString, &$sep, &$subArea) {
             if ($key == $subArea){
                 $dataString = $dataString . $value . $sep;
-            }            
+            }
         });
 
         return $dataString;

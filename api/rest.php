@@ -1,12 +1,11 @@
 <?php
 
-class REST {
+class REST 
+{
 	
 	public $allow = array();
 	public $content_type = 'application/json';
 	public $request = array();
-	
-	private $method = '';		
 	private $code = 200;
 	
 	public function __construct()
@@ -31,9 +30,9 @@ class REST {
 	{
 		$status = array(
 					200 => 'OK',
-					201 => 'Created',  
-					204 => 'No Content',  
-					404 => 'Not Found',  
+					201 => 'Created',
+					204 => 'No Content',
+					404 => 'Not Found',
 					406 => 'Not Acceptable',
 					500 => 'Server Error');
 
@@ -63,7 +62,7 @@ class REST {
 				$this->response('', 406);
 				break;
 		}
-	}	
+	}
 
 	private function cleanInputs($data)
 	{
@@ -80,7 +79,7 @@ class REST {
 			$clean_input = trim($data);
 		}
 		return $clean_input;
-	}		
+	}
 	
 	private function set_headers()
 	{

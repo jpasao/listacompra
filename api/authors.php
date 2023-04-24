@@ -1,6 +1,6 @@
 <?php
 
-spl_autoload_register(function($filename)
+spl_autoload_register(function ($filename)
 {
     require_once strtolower($filename) . '.php';
 });
@@ -8,7 +8,7 @@ spl_autoload_register(function($filename)
 class Authors extends API
 {
     public function callMethod()
-    {        
+    {
         switch ($this->get_request_method()) {
             case 'GET':
                 $this->getAuthors();
@@ -34,25 +34,25 @@ class Authors extends API
             $authorId = Utils::getValue('authorId', true);
             $request = $this->db->prepare('CALL AuthorData(?)');
             $request->bindValue(1, $authorId);
-            $request->execute();        
+            $request->execute();
             
-            if ($request->rowCount() > 0) {           
+            if ($request->rowCount() > 0) {
                 $rows = array();
 
                 while ($request->columnCount()) {
                     $rows[] = $request->fetchAll(PDO::FETCH_ASSOC);
                     $request->nextRowset();
                 }
-                $this->buildResponse($rows[0]);            
+                $this->buildResponse($rows[0]);
             }
-            $this->response('', 204);  
+            $this->response('', 204);
         } catch (PDOException $e) {
             $message = Utils::buildError('PDO getAuthors', $e);
-            $this->response($message, 500);                        
+            $this->response($message, 500);
         } catch (Exception $e) {
             $message = Utils::buildError('getAuthors', $e);
-            $this->response($message, 500);            
-        }        
+            $this->response($message, 500);
+        }
     }
 
     public function saveAuthor($isPost)
@@ -62,19 +62,19 @@ class Authors extends API
             $name = Utils::getValue('name', $isPost);
             $image = Utils::getValue('image', $isPost);
 
-            $UploadMessage = '';
+            $uploadMessage = '';
             if ($authorId != null) {
                 // Is an update. Get previous data to manage image
                 $authorOld = $this->db->prepare('CALL AuthorData(?)');
                 $authorOld->bindValue(1, $authorId);
-                $authorOld->execute(); 
-                $oldImage = $authorOld->fetchAll(PDO::FETCH_ASSOC)[0];                
+                $authorOld->execute();
+                $oldImage = $authorOld->fetchAll(PDO::FETCH_ASSOC)[0];
                 if ($image != $oldImage['image']) {
                     $uploadResult = Utils::uploadImage();
 
                     switch ($uploadResult) {
                         case -1:
-                            $UploadMessage = 'No se encontró el adjunto';
+                            $uploadMessage = 'No se encontró el adjunto';
                             break;
                         case 0:
                             // Upload ok, delete previous file
@@ -82,10 +82,13 @@ class Authors extends API
                             unlink($filenamePath);
                             break;
                         case 1:
-                            $UploadMessage = 'La imagen supera los ' . MAX_IMAGE_SIZE . ' bytes';
+                            $uploadMessage = 'La imagen supera los ' . MAX_IMAGE_SIZE . ' bytes';
                             break;
                         case 2:
-                            $UploadMessage = 'El archivo ha de ser de tipo imagen';
+                            $uploadMessage = 'El archivo ha de ser de tipo imagen';
+                            break;
+                        default:
+                            $uploadMessage = 'Opción desconocida';
                             break;
                     }
                 }
@@ -109,6 +112,6 @@ class Authors extends API
         } catch (Exception $e) {
             $message = Utils::buildError('saveAuthor', $e);
             $this->response($message, 500);
-        }        
+        }
     }
 }
