@@ -1,8 +1,8 @@
 <?php
 
 class Utils
-{ 
-    private $phpInput = 'php://input';
+{
+    private static $phpInput = 'php://input';
 
     public static function buildError($endPoint, $exception)
     {
@@ -16,7 +16,7 @@ class Utils
         if ($isPost) {
             $arr = $_POST;
         } else {
-            parse_str(file_get_contents($phpInput), $_PUT);
+            parse_str(file_get_contents(self::$phpInput), $_PUT);
             $arr = $_PUT;
         }
         
@@ -30,7 +30,7 @@ class Utils
     {
         $res = null;
 
-        parse_str(file_get_contents($phpInput), $_PATCH);
+        parse_str(file_get_contents(self::$phpInput), $_PATCH);
         
         if (isset($_PATCH[$varName]) && empty($_PATCH[$varName]) === false) {
             $res = $_PATCH[$varName];
@@ -40,7 +40,7 @@ class Utils
 
     public static function getJsonContent()
     {
-        return json_decode(file_get_contents("php://input"), true);
+        return json_decode(file_get_contents(self::$phpInput), true);
     }
 
     public static function getLastInsertedId($db)

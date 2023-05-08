@@ -65,7 +65,7 @@ class Products extends API
         return $query;
     }
 
-    // Creates or updates a product name
+    // Creates or updates a product 
     public function saveProduct($isPost)
     {
         $sql = '';

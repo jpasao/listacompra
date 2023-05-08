@@ -1,7 +1,6 @@
 <?php
 
 require 'config.php';
-require 'sendevent.php';
 
 spl_autoload_register(function($filename)
 {
