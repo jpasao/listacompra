@@ -3,7 +3,7 @@
 
 	RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-s [OR]
-	RewriteCond "%{REQUEST_FILENAME}" "! /sendevent.php"
+	#Avoid these conditions: RewriteCond "%{REQUEST_FILENAME}" "! /message.php"
 	RewriteRule ^(.*)$ api.php?x=$1 [QSA,NC,L]
 
 	RewriteCond %{REQUEST_FILENAME} -d

@@ -65,7 +65,7 @@ class Products extends API
         return $query;
     }
 
-    // Creates or updates a product 
+    // Creates or updates a product
     public function saveProduct($isPost)
     {
         $sql = '';
@@ -121,6 +121,8 @@ class Products extends API
             $query->execute($params);
             
             if ($query) {
+                $notification = new Message();
+                $notification->check($productId, $check);
                 $this->getProducts('');
             }
             $this->response('', 204);

@@ -2,7 +2,7 @@
 
 require 'config.php';
 
-spl_autoload_register(function($filename)
+spl_autoload_register(function ($filename)
 {
     require_once strtolower($filename) . '.php';
 });
@@ -41,17 +41,15 @@ class API extends REST
     public function processApi()
     {
         $request = trim($_REQUEST['x']);
-        if ($request != 'sendevent.php') {
-            $bar = '/';
-            $queryWithoutParams = strpos($request, $bar);
-            
-            if ($queryWithoutParams === false) {
-                $func = strtolower(trim(str_replace($bar, '', $request))); //x parameter from RewriteRule
-                $this->checkFunction($func, null);
-            } else {
-                list($func, $param) = array_filter(explode($bar, $request));
-                $this->checkFunction($func, $param);
-            }
+        $bar = '/';
+        $queryWithoutParams = strpos($request, $bar);
+        
+        if ($queryWithoutParams === false) {
+            $func = strtolower(trim(str_replace($bar, '', $request))); //x parameter from RewriteRule
+            $this->checkFunction($func, null);
+        } else {
+            list($func, $param) = array_filter(explode($bar, $request));
+            $this->checkFunction($func, $param);
         }
     }
 
@@ -85,12 +83,14 @@ class API extends REST
     }
 
     // Api endpoints
-    private function product($filter) {
+    private function product($filter)
+    {
         $products = new Products();
         $products->callMethod($filter);
     }
     
-    private function author($filter){
+    private function author($filter)
+    {
         $authors = new Authors();
         $authors->callMethod($filter);
     }
