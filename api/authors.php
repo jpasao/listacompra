@@ -78,11 +78,11 @@ class Authors extends API
                             break;
                         case 0:
                             // Upload ok, delete previous file
-                            $filenamePath = IMG_DIR . $authorOld->image;
+                            $filenamePath = Config::$IMG_DIR . $authorOld->image;
                             unlink($filenamePath);
                             break;
                         case 1:
-                            $uploadMessage = 'La imagen supera los ' . MAX_IMAGE_SIZE . ' bytes';
+                            $uploadMessage = 'La imagen supera los ' . Config::$MAX_IMAGE_SIZE . ' bytes';
                             break;
                         case 2:
                             $uploadMessage = 'El archivo ha de ser de tipo imagen';

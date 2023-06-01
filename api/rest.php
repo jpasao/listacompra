@@ -1,10 +1,8 @@
 <?php
 
-class REST 
+class REST
 {
-	
-	public $allow = array();
-	public $content_type = 'application/json';
+	public $contentType = 'application/json';
 	public $request = array();
 	private $code = 200;
 	
@@ -84,7 +82,7 @@ class REST
 	private function set_headers()
 	{
 		header('HTTP/1.1 ' . $this->code . ' ' . $this->get_status_message());
-		header('Content-Type:' . $this->content_type);
+		header('Content-Type:' . $this->contentType);
 		header('Access-Control-Allow-Origin: *');
 		header("Access-Control-Allow-Headers: X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method");
 		header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE, PATCH");

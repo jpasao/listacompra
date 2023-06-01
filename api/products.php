@@ -100,12 +100,12 @@ class Products extends API
                 $notificationOperation = "añadido algo";
                 if ($isPost) {
                     $product = array('id' => '', 'name' => '', 'quantity' => '', 'comment' => '');
-                    $notificationMessage = str_replace("xxx", $notificationOperation, NOTIFICATION_MESSAGE);
+                    $notificationMessage = str_replace("xxx", $notificationOperation, Config::$NOTIFICATION_MESSAGE);
                     $notification->buildMessage($product, 'POST', $notificationMessage);
                 } else {
                     $product = $this->getProduct($productId);
                     $notificationOperation = "modificado " . $product->name;
-                    $notificationMessage = str_replace("xxx", $notificationOperation, NOTIFICATION_MESSAGE);
+                    $notificationMessage = str_replace("xxx", $notificationOperation, Config::$NOTIFICATION_MESSAGE);
                     $notification->buildMessage($product, 'PUT', $notificationMessage);
                 }
 
@@ -144,7 +144,7 @@ class Products extends API
             if ($query) {
                 $product = $this->getProduct($productId);
                 $notificationOperation = $notificationOperation . $product->name;
-                $notificationMessage = str_replace("xxx", $notificationOperation, NOTIFICATION_MESSAGE);
+                $notificationMessage = str_replace("xxx", $notificationOperation, Config::$NOTIFICATION_MESSAGE);
                 $notification = new Message();
                 $notification->buildMessage($product, 'PATCH', $notificationMessage);
                 $this->getProducts('');

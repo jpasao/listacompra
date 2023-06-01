@@ -27,12 +27,12 @@ class API extends REST
         );
         // Generate DB connection
         $this->db = new PDO(
-            DB_TYPE . ':host=' .
-            DB_HOST . ';dbname=' .
-            DB_NAME . ';charset=' .
-            DB_CHARSET,
-            DB_USER,
-            DB_PASS,
+            Config::$DB_TYPE . ':host=' .
+            Config::$DB_HOST . ';dbname=' .
+            Config::$DB_NAME . ';charset=' .
+            Config::$DB_CHARSET,
+            Config::$DB_USER,
+            Config::$DB_PASS,
             $options
         );
     }
@@ -40,6 +40,7 @@ class API extends REST
     // Check method name
     public function processApi()
     {
+        Config::init();
         $request = trim($_REQUEST['x']);
         $bar = '/';
         $queryWithoutParams = strpos($request, $bar);

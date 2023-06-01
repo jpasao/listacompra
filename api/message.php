@@ -3,14 +3,10 @@
 class Message
 {
     private $token;
-    private $url;
-    private $topic;
-    
+
     public function __construct()
     {
         $this->token = $this->getToken()->access_token;
-        $this->url = 'https://fcm.googleapis.com/v1/projects/listacompra-636c5/messages:send';
-        $this->topic = MAIN_TOPIC;
     }
 
     public function buildMessage($product, $operation, $notificationMessage)
@@ -25,12 +21,12 @@ class Message
         );
 
         $notification = array(
-            'title' => NOTIFICATION_TITLE,
+            'title' => Config::$NOTIFICATION_TITLE,
             'body' => $notificationMessage
         );
 
         $message = array(
-            'topic' => $this->topic,
+            'topic' => Config::$MAIN_TOPIC,
             'notification' => $notification,
             'data' => $data
         );
@@ -48,7 +44,7 @@ class Message
         $jsonData = json_encode($data);
 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->url);
+        curl_setopt($ch, CURLOPT_URL, Config::$FIREBASE_PROJECT_URL);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -69,7 +65,7 @@ class Message
 
     private function getToken()
     {
-        $authConfigString = file_get_contents(SERVICE_ACCOUNT_PATH);
+        $authConfigString = file_get_contents(Config::$SERVICE_ACCOUNT_PATH);
         $authConfig = json_decode($authConfigString);
 
         $secret = openssl_get_privatekey($authConfig->private_key);
@@ -80,12 +76,12 @@ class Message
 
         $time = time();
         $start = $time - 60;
-        $end = $time + NOTIFICATION_TTL;
+        $end = $time + Config::$NOTIFICATION_TTL;
 
         $payload = json_encode([
             "iss" => $authConfig->client_email,
-            "scope" => "https://www.googleapis.com/auth/firebase.messaging",
-            "aud" => "https://oauth2.googleapis.com/token",
+            "scope" => Config::$FIREBASE_SCOPE,
+            "aud" => Config::$FIREBASE_TOKEN,
             "exp" => $end,
             "iat" => $start
         ]);
@@ -100,12 +96,11 @@ class Message
 
         $options = array('http' => array(
             'method'  => 'POST',
-            'content' => 'grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion='.$jwt,
-            'header'  =>
-                "Content-Type: application/x-www-form-urlencoded"
+            'content' => 'grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=' . $jwt,
+            'header'  => "Content-Type: application/x-www-form-urlencoded"
         ));
         $context  = stream_context_create($options);
-        $responseText = file_get_contents("https://oauth2.googleapis.com/token", false, $context);
+        $responseText = file_get_contents(Config::$FIREBASE_TOKEN, false, $context);
         
         return json_decode($responseText);
     }

@@ -57,4 +57,10 @@ class Utils
         }
         return $res;
     }
+
+    public static function uploadImage()
+    {
+        // TBD
+        return true;
+    }
 }
