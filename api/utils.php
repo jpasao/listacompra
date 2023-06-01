@@ -48,4 +48,13 @@ class Utils
         $query = $db->query('SELECT LAST_INSERT_ID()');
         return $query->fetchColumn();
     }
+
+    public static function ensureNotNull($str)
+    {
+        $res = $str;
+        if (strlen($str) == 0){
+            $res = '';
+        }
+        return $res;
+    }
 }

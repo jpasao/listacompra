@@ -103,9 +103,9 @@ class Authors extends API
             $request->execute();
 
             if ($request) {
-                $this->response($UploadMessage, 200);
+                $this->response($uploadMessage, 200);
             }
-            $this->response($UploadMessage, 204);
+            $this->response($uploadMessage, 204);
         } catch (PDOException $e) {
             $message = Utils::buildError('PDO saveAuthor', $e);
             $this->response($message, 500);

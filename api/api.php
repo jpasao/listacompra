@@ -89,10 +89,10 @@ class API extends REST
         $products->callMethod($filter);
     }
     
-    private function author($filter)
+    private function author()
     {
         $authors = new Authors();
-        $authors->callMethod($filter);
+        $authors->callMethod();
     }
 }
 

@@ -46,7 +46,7 @@ class REST
 	
 	private function inputs()
 	{
-		switch($this->get_request_method()){
+		switch ($this->get_request_method()) {
 			case 'POST':
 				$this->request = $this->cleanInputs($_POST);
 				break;

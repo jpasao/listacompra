@@ -25,8 +25,6 @@ define('DB_CHARSET', 'utf8');
 // Message Constants
 define('MAIN_TOPIC', 'MAIN_TOPIC');
 define('NOTIFICATION_TITLE', 'ListaDLC');
-define('NOTIFICATION_MESSAGE', 'Alguien ha añadido algo a la lista de la compra. Echa un vistazo.');
+define('NOTIFICATION_MESSAGE', "Alguien ha xxx en la lista de la compra. Echa un vistazo.");
 define('NOTIFICATION_TTL', 3600);
 define('SERVICE_ACCOUNT_PATH', '/var/listacompra-636c5-firebase-adminsdk-yakfo-15eb2ba912.json');
-
-

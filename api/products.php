@@ -90,7 +90,26 @@ class Products extends API
             $query = $this->db->prepare($sql);
             $query->execute($params);
             if ($query) {
-                $res = json_encode(array('response' => 'ok'));
+                  $response = array(
+                    'id' => $productId,
+                    'name' => $name,
+                    'quantity' => $quantity,
+                    'comment' => $comment);
+
+                $notification = new Message();
+                $notificationOperation = "añadido algo";
+                if ($isPost) {
+                    $product = array('id' => '', 'name' => '', 'quantity' => '', 'comment' => '');
+                    $notificationMessage = str_replace("xxx", $notificationOperation, NOTIFICATION_MESSAGE);
+                    $notification->buildMessage($product, 'POST', $notificationMessage);
+                } else {
+                    $product = $this->getProduct($productId);
+                    $notificationOperation = "modificado " . $product->name;
+                    $notificationMessage = str_replace("xxx", $notificationOperation, NOTIFICATION_MESSAGE);
+                    $notification->buildMessage($product, 'PUT', $notificationMessage);
+                }
+
+                $res = json_encode($response);
                 $this->response($res, 200);
             }
             $this->response('', 204);
@@ -109,11 +128,13 @@ class Products extends API
         try {
             $productId = Utils::getValue('productId', false);
             $check = Utils::getPATCHValue('check');
+            $notificationOperation = "marcado ";
             if ($check == null) {
                 $check = "1";
             } else {
                 $check = "0";
-            }
+                $notificationOperation = "desmarcado ";
+            }            
             
             $sql = "UPDATE ingredients SET isChecked = :check, quantity = 1 WHERE ingredientId = :productId";
             $params = array(':check' => $check, ':productId' => $productId);
@@ -121,8 +142,11 @@ class Products extends API
             $query->execute($params);
             
             if ($query) {
+                $product = $this->getProduct($productId);
+                $notificationOperation = $notificationOperation . $product->name;
+                $notificationMessage = str_replace("xxx", $notificationOperation, NOTIFICATION_MESSAGE);
                 $notification = new Message();
-                $notification->check($productId, $check);
+                $notification->buildMessage($product, 'PATCH', $notificationMessage);
                 $this->getProducts('');
             }
             $this->response('', 204);
@@ -133,5 +157,21 @@ class Products extends API
             $message = Utils::buildError('checkProduct', $e);
             $this->response($message, 500);
         }
+    }
+
+    private function getProduct($productId)
+    {
+        try {
+            $sql = "SELECT ingredientId AS id, name, isChecked, quantity, comment FROM ingredients WHERE ingredientId = :productId";
+            
+            $query = $this->db->prepare($sql);
+            $params = array(':productId' => $productId);
+            $query->execute($params);
+            $row = $query->fetch();
+        } catch (Exception $e) {
+            $message = Utils::buildError('getProduct', $e);
+            $this->response($message, 500);
+        }
+        return $row;
     }
 }

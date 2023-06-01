@@ -5,7 +5,7 @@ class Message
     private $token;
     private $url;
     private $topic;
-
+    
     public function __construct()
     {
         $this->token = $this->getToken()->access_token;
@@ -13,17 +13,20 @@ class Message
         $this->topic = MAIN_TOPIC;
     }
 
-    public function check($productId, $check)
+    public function buildMessage($product, $operation, $notificationMessage)
     {
         $data = array(
-            'productId' => $productId,
-            'check' => $check,
-            'operation' => 'check'
+            'operation' => $operation,
+            'productId' => Utils::ensureNotNull($product->id),
+            'name' => Utils::ensureNotNull($product->name),
+            'quantity' => Utils::ensureNotNull($product->quantity),
+            'comment' => Utils::ensureNotNull($product->comment),
+            'isChecked' => Utils::ensureNotNull($product->isChecked)
         );
 
         $notification = array(
             'title' => NOTIFICATION_TITLE,
-            'body' => NOTIFICATION_MESSAGE
+            'body' => $notificationMessage
         );
 
         $message = array(
@@ -31,6 +34,7 @@ class Message
             'notification' => $notification,
             'data' => $data
         );
+        
         $obj = array('message' => $message);
         $this->sendRequest($obj);
     }
@@ -105,6 +109,5 @@ class Message
         
         return json_decode($responseText);
     }
-    
 }
 
