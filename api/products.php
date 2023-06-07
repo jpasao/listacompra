@@ -72,6 +72,7 @@ class Products extends API
         try {
             $name = Utils::getValue('name', $isPost);
             $authorId = Utils::getValue('authorId', $isPost);
+            $authorName = Utils::getValue('authorName', $isPost);
             $quantity = Utils::getValue('quantity', $isPost);
             $comment = Utils::getValue('comment', $isPost);
             $productId = -1;
@@ -97,15 +98,22 @@ class Products extends API
                     'comment' => $comment);
 
                 $notification = new Message();
-                $notificationOperation = "añadido algo";
+                
+                
+
                 if ($isPost) {
-                    $product = array('id' => '', 'name' => '', 'quantity' => '', 'comment' => '');
-                    $notificationMessage = str_replace("xxx", $notificationOperation, Config::$NOTIFICATION_MESSAGE);
+                    $newProductId = Utils::getLastInsertedId($this->db);
+                    $product = $this->getProduct($newProductId);
+                    $product->user = $authorId;
+                    $notificationOperation = "añadido" . " " . $product->name;
+                    $notificationMessage = $this->buildMessage($notificationOperation, $authorName);
                     $notification->buildMessage($product, 'POST', $notificationMessage);
                 } else {
                     $product = $this->getProduct($productId);
-                    $notificationOperation = "modificado " . $product->name;
-                    $notificationMessage = str_replace("xxx", $notificationOperation, Config::$NOTIFICATION_MESSAGE);
+                    $product->user = $authorId;
+
+                    $notificationOperation = "modificado" . " " . $product->name;
+                    $notificationMessage = $this->buildMessage($notificationOperation, $authorName);
                     $notification->buildMessage($product, 'PUT', $notificationMessage);
                 }
 
@@ -127,14 +135,16 @@ class Products extends API
     {
         try {
             $productId = Utils::getValue('productId', false);
+            $authorId = Utils::getValue('authorId', false);
+            $authorName = Utils::getPATCHValue('authorName', false);
             $check = Utils::getPATCHValue('check');
-            $notificationOperation = "marcado ";
+            $notificationOperation = "marcado";
             if ($check == null) {
                 $check = "1";
             } else {
                 $check = "0";
-                $notificationOperation = "desmarcado ";
-            }            
+                $notificationOperation = "desmarcado";
+            }
             
             $sql = "UPDATE ingredients SET isChecked = :check, quantity = 1 WHERE ingredientId = :productId";
             $params = array(':check' => $check, ':productId' => $productId);
@@ -143,8 +153,10 @@ class Products extends API
             
             if ($query) {
                 $product = $this->getProduct($productId);
-                $notificationOperation = $notificationOperation . $product->name;
-                $notificationMessage = str_replace("xxx", $notificationOperation, Config::$NOTIFICATION_MESSAGE);
+                $product->user = $authorId;
+                $notificationOperation = $notificationOperation . " " . $product->name;
+                $notificationMessage = $this->buildMessage($notificationOperation, $authorName);
+
                 $notification = new Message();
                 $notification->buildMessage($product, 'PATCH', $notificationMessage);
                 $this->getProducts('');
@@ -157,6 +169,15 @@ class Products extends API
             $message = Utils::buildError('checkProduct', $e);
             $this->response($message, 500);
         }
+    }
+
+    private function buildMessage($operation, $user)
+    {
+        $message = str_replace("xxx", $operation, Config::$NOTIFICATION_MESSAGE);
+        if ($user != '') {
+            $message = str_replace("Alguien", $user, $message);
+        }
+        return $message;
     }
 
     private function getProduct($productId)

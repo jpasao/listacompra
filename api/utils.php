@@ -52,7 +52,7 @@ class Utils
     public static function ensureNotNull($str)
     {
         $res = $str;
-        if (strlen($str) == 0){
+        if (strlen($str) == 0) {
             $res = '';
         }
         return $res;

@@ -31,21 +31,17 @@ class Authors extends API
     public function getAuthors()
     {
         try {
-            $authorId = Utils::getValue('authorId', true);
-            $request = $this->db->prepare('CALL AuthorData(?)');
-            $request->bindValue(1, $authorId);
-            $request->execute();
-            
-            if ($request->rowCount() > 0) {
-                $rows = array();
-
-                while ($request->columnCount()) {
-                    $rows[] = $request->fetchAll(PDO::FETCH_ASSOC);
-                    $request->nextRowset();
-                }
-                $this->buildResponse($rows[0]);
+            $authorId = null;
+            if (isset($_GET['authorId'])) {
+                $authorId = $_GET['authorId'];
             }
-            $this->response('', 204);
+
+            $authors = $this->getAuthorList($authorId);
+            if ($authors == null) {
+                $this->response('', 204);
+            } else {
+                $this->buildResponse($authors);
+            }
         } catch (PDOException $e) {
             $message = Utils::buildError('PDO getAuthors', $e);
             $this->response($message, 500);
@@ -53,6 +49,24 @@ class Authors extends API
             $message = Utils::buildError('getAuthors', $e);
             $this->response($message, 500);
         }
+    }
+
+    public function getAuthorList($authorId)
+    {
+        $request = $this->db->prepare('CALL AuthorData(?)');
+        $request->bindValue(1, $authorId);
+        $request->execute();
+        
+        if ($request->rowCount() > 0) {
+            $rows = array();
+
+            while ($request->columnCount()) {
+                $rows[] = $request->fetchAll(PDO::FETCH_ASSOC);
+                $request->nextRowset();
+            }
+            return $rows[0];
+        }
+        return null;
     }
 
     public function saveAuthor($isPost)

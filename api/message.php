@@ -17,7 +17,8 @@ class Message
             'name' => Utils::ensureNotNull($product->name),
             'quantity' => Utils::ensureNotNull($product->quantity),
             'comment' => Utils::ensureNotNull($product->comment),
-            'isChecked' => Utils::ensureNotNull($product->isChecked)
+            'isChecked' => Utils::ensureNotNull($product->isChecked),
+            'user' => Utils::ensureNotNull($product->user)
         );
 
         $notification = array(

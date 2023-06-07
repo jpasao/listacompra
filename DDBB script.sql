@@ -203,11 +203,9 @@ INSERT INTO `tags` (`tagId`, `name`) VALUES
 DELIMITER //
 CREATE PROCEDURE `AuthorData`(
 	IN `pAuthorId` INT
-
-
 )
 BEGIN	
-	SELECT A.authorId, A.name, A.image, COUNT(R.recipeId) AS number
+	SELECT A.authorId AS id, A.name, A.image, COUNT(R.recipeId) AS number
 	FROM authors A
 		LEFT JOIN recipes R ON A.authorId = R.authorId	
 	WHERE pAuthorID IS NULL OR A.authorId = pAuthorId
