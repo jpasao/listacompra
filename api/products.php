@@ -98,8 +98,6 @@ class Products extends API
                     'comment' => $comment);
 
                 $notification = new Message();
-                
-                
 
                 if ($isPost) {
                     $newProductId = Utils::getLastInsertedId($this->db);
@@ -116,6 +114,7 @@ class Products extends API
                     $notificationMessage = $this->buildMessage($notificationOperation, $authorName);
                     $notification->buildMessage($product, 'PUT', $notificationMessage);
                 }
+                $this->saveOperation($notificationMessage);
 
                 $res = json_encode($response);
                 $this->response($res, 200);
@@ -159,6 +158,7 @@ class Products extends API
 
                 $notification = new Message();
                 $notification->buildMessage($product, 'PATCH', $notificationMessage);
+                $this->saveOperation($notificationMessage);
                 $this->getProducts('');
             }
             $this->response('', 204);
@@ -194,5 +194,12 @@ class Products extends API
             $this->response($message, 500);
         }
         return $row;
+    }
+
+    private function saveOperation($message) {
+        $sql = "INSERT INTO historic(message) VALUES(:message)";
+        $params = array(':message' => $message);
+        $query = $this->db->prepare($sql);
+        $query->execute($params);
     }
 }

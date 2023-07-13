@@ -106,9 +106,9 @@ class Authors extends API
                             break;
                     }
                 }
+                $authorOld->closeCursor();
             }
 
-            $authorOld->closeCursor();
             $request = $this->db->prepare('CALL AuthorSave(?, ?, ?)');
             $request->bindParam(1, $authorId);
             $request->bindParam(2, $name);
