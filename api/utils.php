@@ -58,6 +58,17 @@ class Utils
         return $res;
     }
 
+    public static function checkWhitelist()
+    {
+        $whiteListFile = file_get_contents(Config::$WHITELIST_PATH);
+        $whiteList = json_decode($whiteListFile);
+
+        $headers = getallheaders();
+
+        $installationIdHeader = $headers[Config::$INSTALLATION_ID_HEADER];
+        return in_array($installationIdHeader, $whiteList->devices);
+    }
+
     public static function uploadImage()
     {
         // TBD

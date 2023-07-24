@@ -30,6 +30,7 @@ class REST
 					200 => 'OK',
 					201 => 'Created',
 					204 => 'No Content',
+					401 => 'Unauthorized',
 					404 => 'Not Found',
 					406 => 'Not Acceptable',
 					500 => 'Server Error');

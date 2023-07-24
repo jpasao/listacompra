@@ -28,6 +28,8 @@ class Config
 	public static $URL_PUBLIC_FOLDER = 'public';
 	public static $URL_PROTOCOL = 'http://';
 	public static $MAX_IMAGE_SIZE = 2 * 1024 * 1024;
+	public static $WHITELIST_PATH = '/var/allowedDevices.json';
+	public static $INSTALLATION_ID_HEADER = 'INSTALLATIONID';
 
 	// DB Constants
 	public static $DB_TYPE = 'mysql';
