@@ -26,11 +26,11 @@ class API extends REST
             PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true
         );
         // Generate DB connection
-        $this->db = new PDO(
-            Config::$DB_TYPE . ':host=' .
-            Config::$DB_HOST . ';dbname=' .
-            Config::$DB_NAME . ';charset=' .
-            Config::$DB_CHARSET,
+        $this->db = new PDO(Config::$DB_TYPE .
+            ':host=' . Config::$DB_HOST .
+            ';dbname=' . Config::$DB_NAME .
+            ';charset=' . Config::$DB_CHARSET .
+            ';collation=' . Config::$DB_COLLATION,
             Config::$DB_USER,
             Config::$DB_PASS,
             $options

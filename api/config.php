@@ -37,7 +37,8 @@ class Config
 	public static $DB_NAME = 'recetas';
 	public static $DB_USER = 'invitado';
 	public static $DB_PASS = 'invitado';
-	public static $DB_CHARSET = 'utf8';
+	public static $DB_CHARSET = 'utf8mb4';
+	public static $DB_COLLATION = 'utf8mb4_unicode_ci';
 
 	// Message Constants
 	public static $MAIN_TOPIC = 'MAIN_TOPIC';
