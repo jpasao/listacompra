@@ -11,24 +11,24 @@ class Meals extends API
     {
         switch ($this->get_request_method()) {
             case 'GET':
-                $this->getMeals();
+                $this->getMealsOrIngredients();
                 break;
             case 'PATCH':
                 $this->checkMeal();
                 break;
-                case 'POST':
-                    $this->saveMeal(true);
-                    break;
-                case 'PUT':
-                    $this->saveMeal(false);
-                    break;
+            case 'POST':
+                $this->saveMeal(true);
+                break;
+            case 'PUT':
+                $this->saveMealOrIngredients();
+                break;
             default:
             $this->response('', 204);
                 break;
         }
     }
 
-    public function getMeals()
+    public function getMealsOrIngredients()
     {
         try {
             $isAllowed = Utils::CheckWhitelist();
@@ -102,6 +102,72 @@ class Meals extends API
             $this->buildResponse($meals);
         }
     }
+
+    public function saveMealOrIngredients()
+    {
+        try {
+            $ingredients = Utils::getValue('ingredients', false);
+            if (isset($ingredients)) {
+                $this->saveIngredients($ingredients);
+            } else {
+                $this->saveMeal(false);
+            }
+        } catch (Exception $e) {
+            $message = Utils::buildError('saveMealOrIngredients', $e);
+            $this->response($message, 500);
+        }
+    }
+
+    public function saveIngredients($ingredients)
+    {
+        $sql = '';
+        $values = array();
+        try {
+            $mealId = Utils::getValue('mealId', false);
+            $deleteOk = $this->deleteIngredients($mealId);
+
+            if ($deleteOk) {
+                $str_arr = preg_split ("/\,/", $ingredients);
+                foreach($str_arr as $row) {
+                    $values[] = '(' . $mealId . ', '. $row . ')';
+                }
+                $sql = 'INSERT INTO mealingredients (mealId, ingredientId) VALUES ' . implode(', ', $values);
+                $query = $this->db->prepare($sql);
+                $query->execute();
+                if ($query) {
+                    $this->getMealData($mealId);
+                }
+                $this->response('Ha fallado la inserción de los ingredientes de la comida', 500);
+            } else {
+                $this->response('Hubo un error al borrar los ingredientes antes de insertar los nuevos. No se ha realizado la inserción', 500);
+            }
+        } catch (PDOException $e) {
+            $message = Utils::buildError('PDO saveIngredients', $e);
+            $this->response($message, 500);
+        } catch (Exception $e) {
+            $message = Utils::buildError('saveIngredients', $e);
+            $this->response($message, 500);
+        }
+    }
+
+    public function deleteIngredients($mealId)
+    {
+        $sql = '';
+        try {
+            $sql = 'DELETE FROM mealingredients WHERE mealId = :mealId';
+            $params = array(':mealId' => $mealId);
+            
+            $query = $this->db->prepare($sql);
+            $query->execute($params);
+            return $query;
+        } catch (PDOException $e) {
+            $message = Utils::buildError('PDO deleteIngredients', $e);
+            $this->response($message, 500);
+        } catch (Exception $e) {
+            $message = Utils::buildError('deleteIngredients', $e);
+            $this->response($message, 500);
+        }
+    }
     
     public function saveMeal($isPost)
     {
@@ -148,6 +214,7 @@ class Meals extends API
                 $check = 1;
             } else {
                 $check = (int)$check;
+                $check--;
                 if ($check == 1) {
                     $check = 0;
                 } else {

@@ -140,7 +140,7 @@ class Products extends API
         try {
             $productId = Utils::getValue('productId', false);
             $authorId = Utils::getValue('authorId', false);
-            $authorName = Utils::getPATCHValue('authorName', false);
+            $authorName = Utils::getPATCHValue('authorName');
             $check = Utils::getPATCHValue('check');
             $notificationOperation = "marcado";
             if ($check == null) {
