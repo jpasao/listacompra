@@ -42,6 +42,7 @@ class Config
 
 	// Message Constants
 	public static $MAIN_TOPIC = 'MAIN_TOPIC';
+	public static $MEAL_TOPIC = 'MEAL_TOPIC';
 	public static $NOTIFICATION_TITLE = 'ListaDLC';
 	public static $NOTIFICATION_MESSAGE = "Alguien ha xxx en la lista de la compra. Echa un vistazo.";
 	public static $NOTIFICATION_TTL = 3600;

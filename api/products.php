@@ -110,14 +110,14 @@ class Products extends API
                     $product->user = $authorId;
                     $notificationOperation = "añadido" . " " . $product->name;
                     $notificationMessage = $this->buildMessage($notificationOperation, $authorName);
-                    $notification->buildMessage($product, 'POST', $notificationMessage);
+                    $notification->buildMessageByType(Config::$MAIN_TOPIC, $product, 'POST', $notificationMessage);
                 } else {
                     $product = $this->getProduct($productId);
                     $product->user = $authorId;
 
                     $notificationOperation = "modificado" . " " . $product->name;
                     $notificationMessage = $this->buildMessage($notificationOperation, $authorName);
-                    $notification->buildMessage($product, 'PUT', $notificationMessage);
+                    $notification->buildMessageByType(Config::$MAIN_TOPIC, $product, 'PUT', $notificationMessage);
                 }
                 $this->saveOperation($notificationMessage);
 
@@ -162,7 +162,7 @@ class Products extends API
                 $notificationMessage = $this->buildMessage($notificationOperation, $authorName);
 
                 $notification = new Message();
-                $notification->buildMessage($product, 'PATCH', $notificationMessage);
+                $notification->buildMessageByType(Config::$MAIN_TOPIC, $product, 'PATCH', $notificationMessage);
                 $this->saveOperation($notificationMessage);
                 $this->getProducts('');
             }

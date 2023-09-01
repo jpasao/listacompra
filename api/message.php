@@ -9,7 +9,17 @@ class Message
         $this->token = $this->getToken()->access_token;
     }
 
-    public function buildMessage($product, $operation, $notificationMessage)
+    public function buildMessageByType($type, $object, $operation, $notificationMessage)
+    {
+        if ($type == Config::$MAIN_TOPIC) {
+            $this->buildMessage($object, $operation, $notificationMessage);
+        }
+        if ($type == Config::$MEAL_TOPIC) {
+            $this->buildMealMessage($object);
+        }
+    }
+
+    private function buildMessage($product, $operation, $notificationMessage)
     {
         $data = array(
             'operation' => $operation,
@@ -30,6 +40,22 @@ class Message
             'topic' => Config::$MAIN_TOPIC,
             'notification' => $notification,
             'data' => $data
+        );
+        
+        $obj = array('message' => $message);
+        $this->sendRequest($obj);
+    }
+
+    private function buildMealMessage($authorId)
+    {
+        $notification = array(
+            'title' => Config::$NOTIFICATION_TITLE,
+            'body' => $authorId
+        );
+
+        $message = array(
+            'topic' => Config::$MEAL_TOPIC,
+            'notification' => $notification
         );
         
         $obj = array('message' => $message);

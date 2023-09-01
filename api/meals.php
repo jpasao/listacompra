@@ -173,10 +173,14 @@ class Meals extends API
     {
         $sql = '';
         try {
+            $authorId = Utils::getValue('authorId', $isPost);
             $name = Utils::getValue('name', $isPost);
             $isLunch = Utils::getValue('isLunch', $isPost);
             $isLunch = $isLunch == 2 ? 0 : 1;
             $mealId = -1;
+
+            $notification = new Message();
+
             if ($isPost) {
                 $sql = 'INSERT INTO meals (name, isLunch, isChecked) VALUES (:name, :isLunch, 1)';
                 $params = array(':name' => $name, ':isLunch' => $isLunch);
@@ -185,6 +189,8 @@ class Meals extends API
                 $params = array(':name' => $name, ':isLunch' => $isLunch, ':mealId' => $mealId);
                 $sql = 'UPDATE meals SET name = :name, isLunch = :isLunch WHERE mealId = :mealId';
             }
+            $notification->buildMessageByType(Config::$MEAL_TOPIC, $authorId, '', '');
+            
             $query = $this->db->prepare($sql);
             $query->execute($params);
             if ($query) {
@@ -208,8 +214,10 @@ class Meals extends API
     public function checkMeal()
     {
         try {
+            $authorId = Utils::getValue('authorId', false);
             $mealId = Utils::getValue('mealId', false);
             $check = Utils::getPATCHValue('check');
+ 
             if ($check == null) {
                 $check = 1;
             } else {
@@ -229,6 +237,8 @@ class Meals extends API
             $query->execute($params);
 
             if ($query) {
+                $notification = new Message();
+                $notification->buildMessageByType(Config::$MEAL_TOPIC, $authorId, '', '');
                 $this->getMealList();
             }
             $this->response('', 204);
