@@ -11,15 +11,20 @@ class Message
 
     public function buildMessageByType($type, $object, $operation, $notificationMessage)
     {
-        if ($type == Config::$MAIN_TOPIC) {
-            $this->buildMessage($object, $operation, $notificationMessage);
-        }
-        if ($type == Config::$MEAL_TOPIC) {
-            $this->buildMealMessage($object);
+        switch ($type) {
+            case Config::$MAIN_TOPIC:
+                $this->buildDataMessage($object, $operation, $notificationMessage);
+                break;
+            case Config::$MEAL_TOPIC: 
+            case Config::$OTHER_TOPIC:
+                $this->buildNoDataMessage($object, $type);
+                break;
+            default:
+                break;
         }
     }
 
-    private function buildMessage($product, $operation, $notificationMessage)
+    private function buildDataMessage($product, $operation, $notificationMessage)
     {
         $data = array(
             'operation' => $operation,
@@ -46,7 +51,7 @@ class Message
         $this->sendRequest($obj);
     }
 
-    private function buildMealMessage($authorId)
+    private function buildNoDataMessage($authorId, $topic)
     {
         $notification = array(
             'title' => Config::$NOTIFICATION_TITLE,
@@ -54,7 +59,7 @@ class Message
         );
 
         $message = array(
-            'topic' => Config::$MEAL_TOPIC,
+            'topic' => $topic,
             'notification' => $notification
         );
         

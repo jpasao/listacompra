@@ -182,7 +182,7 @@ class Meals extends API
             $notification = new Message();
 
             if ($isPost) {
-                $sql = 'INSERT INTO meals (name, isLunch, isChecked) VALUES (:name, :isLunch, 1)';
+                $sql = 'INSERT INTO meals (name, isLunch, isChecked) VALUES (:name, :isLunch, 0)';
                 $params = array(':name' => $name, ':isLunch' => $isLunch);
             } else {
                 $mealId = Utils::getValue('mealId', $isPost);

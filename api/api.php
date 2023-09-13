@@ -10,7 +10,7 @@ spl_autoload_register(function ($filename)
 class API extends REST
 {
     public $db = null;
-    private $endPoints = array('product', 'author', 'meal');
+    private $endPoints = array('product', 'author', 'meal', 'other');
 
     public function __construct()
     {
@@ -99,6 +99,12 @@ class API extends REST
     private function meal()
     {
         $meals = new Meals();
+        $meals->callMethod();
+    }
+
+    private function other()
+    {
+        $meals = new Others();
         $meals->callMethod();
     }
 }
