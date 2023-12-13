@@ -31,20 +31,15 @@ class Meals extends API
     public function getMealsOrIngredients()
     {
         try {
-            $isAllowed = Utils::CheckWhitelist();
-            if($isAllowed) {
-                $mealId = null;
-                if (isset($_GET['mealId'])) {
-                    $mealId = $_GET['mealId'];
-                }
-                
-                if ($mealId == null) {
-                    $this->getMealList();
-                } else {
-                    $this->getMealData($mealId);
-                }
+            $mealId = null;
+            if (isset($_GET['mealId'])) {
+                $mealId = $_GET['mealId'];
+            }
+            
+            if ($mealId == null) {
+                $this->getMealList();
             } else {
-                $this->response('', 401);
+                $this->getMealData($mealId);
             }
         } catch (PDOException $e) {
             $message = Utils::buildError('PDO getMeals', $e);

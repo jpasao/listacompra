@@ -35,6 +35,7 @@ class Config
 	public static $DB_TYPE = 'mysql';
 	public static $DB_HOST = 'localhost';
 	public static $DB_NAME = 'recetas';
+	public static $DB_NAME_EMPTY = 'recetasempty';
 	public static $DB_USER = 'invitado';
 	public static $DB_PASS = 'invitado';
 	public static $DB_CHARSET = 'utf8mb4';

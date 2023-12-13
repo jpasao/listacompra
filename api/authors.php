@@ -31,21 +31,16 @@ class Authors extends API
     public function getAuthors()
     {
         try {
-            $isAllowed = Utils::CheckWhitelist();
-            if ($isAllowed) {
-                $authorId = null;
-                if (isset($_GET['authorId'])) {
-                    $authorId = $_GET['authorId'];
-                }
-    
-                $authors = $this->getAuthorList($authorId);
-                if ($authors == null) {
-                    $this->response('', 204);
-                } else {
-                    $this->buildResponse($authors);
-                }
+            $authorId = null;
+            if (isset($_GET['authorId'])) {
+                $authorId = $_GET['authorId'];
+            }
+
+            $authors = $this->getAuthorList($authorId);
+            if ($authors == null) {
+                $this->response('', 204);
             } else {
-                $this->response('', 401);
+                $this->buildResponse($authors);
             }
         } catch (PDOException $e) {
             $message = Utils::buildError('PDO getAuthors', $e);

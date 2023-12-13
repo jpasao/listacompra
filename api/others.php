@@ -26,28 +26,23 @@ class Others extends API
     {
         try {
             $others = [];
-            $isAllowed = Utils::CheckWhitelist();
-            if($isAllowed) {
-                $request = $this->db->prepare('CALL OthersData()');
-                $request->execute();
-                
-                if ($request->rowCount() > 0) {
-                    $rows = array();
-    
-                    while ($request->columnCount()) {
-                        $rows[] = $request->fetchAll(PDO::FETCH_ASSOC);
-                        $request->nextRowset();
-                    }
-                    $others = $rows[0];
+            $request = $this->db->prepare('CALL OthersData()');
+            $request->execute();
+            
+            if ($request->rowCount() > 0) {
+                $rows = array();
+
+                while ($request->columnCount()) {
+                    $rows[] = $request->fetchAll(PDO::FETCH_ASSOC);
+                    $request->nextRowset();
                 }
-    
-                if ($others == null) {
-                    $this->response('', 204);
-                } else {
-                    $this->buildResponse($others);
-                }
+                $others = $rows[0];
+            }
+
+            if ($others == null) {
+                $this->response('', 204);
             } else {
-                $this->response('', 401);
+                $this->buildResponse($others);
             }
         } catch (PDOException $e) {
             $message = Utils::buildError('PDO getOthersList', $e);

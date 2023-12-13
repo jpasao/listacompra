@@ -25,10 +25,11 @@ class API extends REST
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true
         );
+        $dbName = Utils::CheckWhitelist() ? Config::$DB_NAME : Config::$DB_NAME_EMPTY;
         // Generate DB connection
         $this->db = new PDO(Config::$DB_TYPE .
             ':host=' . Config::$DB_HOST .
-            ';dbname=' . Config::$DB_NAME .
+            ';dbname=' . $dbName .
             ';charset=' . Config::$DB_CHARSET .
             ';collation=' . Config::$DB_COLLATION,
             Config::$DB_USER,

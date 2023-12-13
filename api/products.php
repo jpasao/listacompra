@@ -32,17 +32,12 @@ class Products extends API
     public function getProducts($filter)
     {
         try {
-            $isAllowed = Utils::CheckWhitelist();
-            if ($isAllowed) {
-                $query = $this->getRows($filter);
+            $query = $this->getRows($filter);
             
-                if ($query->rowCount() > 0) {
-                    $this->buildResponse($query->fetchAll());
-                }
-                $this->response('', 204);
-            } else {
-                $this->response('', 401);
+            if ($query->rowCount() > 0) {
+                $this->buildResponse($query->fetchAll());
             }
+            $this->response('', 204);
         } catch (PDOException $e) {
             $message = Utils::buildError('PDO getProducts', $e);
             $this->response($message, 500);
