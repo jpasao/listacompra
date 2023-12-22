@@ -37,7 +37,8 @@ class Products extends API
             if ($query->rowCount() > 0) {
                 $this->buildResponse($query->fetchAll());
             }
-            $this->response('', 204);
+            $defaultResponse = array();
+            $this->response(json_encode($defaultResponse), 200);
         } catch (PDOException $e) {
             $message = Utils::buildError('PDO getProducts', $e);
             $this->response($message, 500);
@@ -114,7 +115,7 @@ class Products extends API
                     $notificationMessage = $this->buildMessage($notificationOperation, $authorName);
                     $notification->buildMessageByType(Config::$MAIN_TOPIC, $product, 'PUT', $notificationMessage);
                 }
-                $this->saveOperation($notificationMessage);
+                //$this->saveOperation($notificationMessage);
 
                 $res = json_encode($response);
                 $this->response($res, 200);
@@ -158,7 +159,7 @@ class Products extends API
 
                 $notification = new Message();
                 $notification->buildMessageByType(Config::$MAIN_TOPIC, $product, 'PATCH', $notificationMessage);
-                $this->saveOperation($notificationMessage);
+                //$this->saveOperation($notificationMessage);
                 $this->getProducts('');
             }
             $this->response('', 204);
