@@ -213,7 +213,10 @@ class Meals extends API
             $authorId = Utils::getValue('authorId', false);
             $mealId = Utils::getValue('mealId', false);
             $check = Utils::getPATCHValue('check');
- 
+            $isLunch = Utils::getValue('isLunch', false);
+            $oldRequest = $isLunch == null;
+            $isLunch = $isLunch == 2 ? 1 : 0;
+
             if ($check == null) {
                 $check = 1;
             } else {
@@ -227,8 +230,13 @@ class Meals extends API
             }
             $mealId = (int)$mealId;
 
-            $sql = "UPDATE meals SET isChecked = :check WHERE mealId = :mealId";
-            $params = array(':check' => $check, ':mealId' => $mealId);
+            if ($oldRequest){
+                $sql = "UPDATE meals SET isChecked = :check WHERE mealId = :mealId";
+                $params = array(':check' => $check, ':mealId' => $mealId);
+            } else {
+                $sql = "UPDATE meals SET isChecked = :check, isLunch = :isLunch WHERE mealId = :mealId";
+                $params = array(':check' => $check, ':isLunch' => $isLunch, ':mealId' => $mealId);
+            }
             $query = $this->db->prepare($sql);
             $query->execute($params);
 
