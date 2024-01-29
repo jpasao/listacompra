@@ -16,6 +16,9 @@ class Others extends API
             case 'POST':
                 $this->saveOther();
                 break;
+            case 'DELETE':
+                $this->deleteOther();
+                break;
             default:
             $this->response('', 204);
                 break;
@@ -95,6 +98,33 @@ class Others extends API
             $this->response($message, 500);
         } catch (Exception $e) {
             $message = Utils::buildError('saveOther', $e);
+            $this->response($message, 500);
+        }
+    }
+
+    public function deleteOther()
+    {
+        try {
+            $params = Utils::getDELETEValues();
+            $otherId = $params[4];
+            $authorId = $params[5];
+            $sql = "DELETE FROM otherschild WHERE id = :otherId";
+            $params = array(':otherId' => $otherId);
+            $query = $this->db->prepare($sql);
+            $query->execute($params);
+            
+            if ($query) {
+                $notification = new Message();
+                $notification->buildMessageByType(Config::$OTHER_TOPIC, $authorId, '', '');
+                
+                $this->getOthersList();
+            }
+            $this->response('', 204);
+        } catch (PDOException $e) {
+            $message = Utils::buildError('PDO deleteOther', $e);
+            $this->response($message, 500);
+        } catch (Exception $e) {
+            $message = Utils::buildError('deleteOther', $e);
             $this->response($message, 500);
         }
     }

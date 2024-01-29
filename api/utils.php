@@ -38,6 +38,14 @@ class Utils
         return $res;
     }
 
+    public static function getDELETEValues()
+    {
+        $url = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+        $path = parse_url($url, PHP_URL_PATH);
+
+        return explode('/', $path);
+    }
+
     public static function getJsonContent()
     {
         return json_decode(file_get_contents(self::$phpInput), true);

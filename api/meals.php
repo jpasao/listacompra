@@ -22,6 +22,9 @@ class Meals extends API
             case 'PUT':
                 $this->saveMealOrIngredients();
                 break;
+            case 'DELETE':
+                $this->deleteMeal();
+                break;
             default:
             $this->response('', 204);
                 break;
@@ -251,6 +254,33 @@ class Meals extends API
             $this->response($message, 500);
         } catch (Exception $e) {
             $message = Utils::buildError('checkMeal', $e);
+            $this->response($message, 500);
+        }
+    }
+
+    public function deleteMeal()
+    {
+        try {
+            $params = Utils::getDELETEValues();
+            $mealId = $params[4];
+            $authorId = $params[5];
+            $sql = "DELETE FROM meals WHERE mealId = :mealId";
+            $params = array(':mealId' => $mealId);
+            $query = $this->db->prepare($sql);
+            $query->execute($params);
+            
+            if ($query) {
+                $notification = new Message();
+                $notification->buildMessageByType(Config::$MEAL_TOPIC, $authorId, '', '');
+                
+                $this->getMealList();
+            }
+            $this->response('', 204);
+        } catch (PDOException $e) {
+            $message = Utils::buildError('PDO deleteMeal', $e);
+            $this->response($message, 500);
+        } catch (Exception $e) {
+            $message = Utils::buildError('deleteMeal', $e);
             $this->response($message, 500);
         }
     }

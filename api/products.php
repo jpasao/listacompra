@@ -22,6 +22,9 @@ class Products extends API
             case 'PATCH':
                 $this->checkProduct();
                 break;
+            case 'DELETE':
+                $this->deleteProduct();
+                break;
             default:
                 $this->response('', 204);
                 break;
@@ -115,8 +118,7 @@ class Products extends API
                     $notificationMessage = $this->buildMessage($notificationOperation, $authorName);
                     $notification->buildMessageByType(Config::$MAIN_TOPIC, $product, 'PUT', $notificationMessage);
                 }
-                //$this->saveOperation($notificationMessage);
-
+                
                 $res = json_encode($response);
                 $this->response($res, 200);
             }
@@ -159,7 +161,7 @@ class Products extends API
 
                 $notification = new Message();
                 $notification->buildMessageByType(Config::$MAIN_TOPIC, $product, 'PATCH', $notificationMessage);
-                //$this->saveOperation($notificationMessage);
+                
                 $this->getProducts('');
             }
             $this->response('', 204);
@@ -197,10 +199,30 @@ class Products extends API
         return $row;
     }
 
-    private function saveOperation($message) {
-        $sql = "INSERT INTO historic(message) VALUES(:message)";
-        $params = array(':message' => $message);
-        $query = $this->db->prepare($sql);
-        $query->execute($params);
+    public function deleteProduct()
+    {
+        try {
+            $params = Utils::getDELETEValues();
+            $productId = $params[4];
+            $authorId = $params[5];
+            $sql = "DELETE FROM ingredients WHERE ingredientId = :productId";
+            $params = array(':productId' => $productId);
+            $query = $this->db->prepare($sql);
+            $query->execute($params);
+            
+            if ($query) {
+                $notification = new Message();
+                $notification->buildMessageByType(Config::$OTHER_TOPIC, $authorId, '', '');
+                
+                $this->getProducts('');
+            }
+            $this->response('', 204);
+        } catch (PDOException $e) {
+            $message = Utils::buildError('PDO deleteProduct', $e);
+            $this->response($message, 500);
+        } catch (Exception $e) {
+            $message = Utils::buildError('deleteProduct', $e);
+            $this->response($message, 500);
+        }
     }
 }
