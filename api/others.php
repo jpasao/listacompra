@@ -49,10 +49,10 @@ class Others extends API
                 $this->buildResponse($others);
             }
         } catch (PDOException $e) {
-            $message = Utils::buildError('PDO getOthersList', $e);
+            $message = Utils::buildError('PDO getOthersList', $e, $this->db);
             $this->response($message, 500);
         } catch (Exception $e) {
-            $message = Utils::buildError('getOthersList', $e);
+            $message = Utils::buildError('getOthersList', $e, $this->db);
             $this->response($message, 500);
         }
     }
@@ -94,10 +94,10 @@ class Others extends API
             }
             
         } catch (PDOException $e) {
-            $message = Utils::buildError('PDO saveOther', $e);
+            $message = Utils::buildError('PDO saveOther', $e, $this->db);
             $this->response($message, 500);
         } catch (Exception $e) {
-            $message = Utils::buildError('saveOther', $e);
+            $message = Utils::buildError('saveOther', $e, $this->db);
             $this->response($message, 500);
         }
     }
@@ -121,10 +121,10 @@ class Others extends API
             }
             $this->response('', 204);
         } catch (PDOException $e) {
-            $message = Utils::buildError('PDO deleteOther', $e);
+            $message = Utils::buildError('PDO deleteOther', $e, $this->db);
             $this->response($message, 500);
         } catch (Exception $e) {
-            $message = Utils::buildError('deleteOther', $e);
+            $message = Utils::buildError('deleteOther', $e, $this->db);
             $this->response($message, 500);
         }
     }

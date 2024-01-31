@@ -39,10 +39,10 @@ class Ingredients extends API
             }
             $this->response('', 204);
         } catch (PDOException $e) {
-            $message = Utils::buildError('PDO getIngredients', $e);
+            $message = Utils::buildError('PDO getIngredients', $e, $this->db);
             $this->response($message, 500);
         } catch (Exception $e) {
-            $message = Utils::buildError('getIngredients', $e);
+            $message = Utils::buildError('getIngredients', $e, $this->db);
             $this->response($message, 500);
         }
     }
@@ -62,10 +62,10 @@ class Ingredients extends API
             }
             $this->response('', 204);
         } catch (PDOException $e) {
-            $message = Utils::buildError('PDO saveIngredient', $e);
+            $message = Utils::buildError('PDO saveIngredient', $e, $this->db);
             $this->response($message, 500);
         } catch (Exception $e) {
-            $message = Utils::buildError('saveIngredient', $e);
+            $message = Utils::buildError('saveIngredient', $e, $this->db);
             $this->response($message, 500);
         }
     }
@@ -78,10 +78,10 @@ class Ingredients extends API
             $request->bindParam(1, $ingredientId);
             $request->execute();
         } catch (PDOException $e) {
-            $message = Utils::buildError('PDO deleteIngredient', $e);
+            $message = Utils::buildError('PDO deleteIngredient', $e, $this->db);
             $this->response($message, 500);
         } catch (Exception $e) {
-            $message = Utils::buildError('deleteIngredient', $e);
+            $message = Utils::buildError('deleteIngredient', $e, $this->db);
             $this->response($message, 500);
         }
     }

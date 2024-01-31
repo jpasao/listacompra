@@ -45,10 +45,10 @@ class Meals extends API
                 $this->getMealData($mealId);
             }
         } catch (PDOException $e) {
-            $message = Utils::buildError('PDO getMeals', $e);
+            $message = Utils::buildError('PDO getMeals', $e, $this->db);
             $this->response($message, 500);
         } catch (Exception $e) {
-            $message = Utils::buildError('getMeals', $e);
+            $message = Utils::buildError('getMeals', $e, $this->db);
             $this->response($message, 500);
         }
     }
@@ -112,7 +112,7 @@ class Meals extends API
                 $this->saveMeal(false);
             }
         } catch (Exception $e) {
-            $message = Utils::buildError('saveMealOrIngredients', $e);
+            $message = Utils::buildError('saveMealOrIngredients', $e, $this->db);
             $this->response($message, 500);
         }
     }
@@ -141,10 +141,10 @@ class Meals extends API
                 $this->response('Hubo un error al borrar los ingredientes antes de insertar los nuevos. No se ha realizado la inserción', 500);
             }
         } catch (PDOException $e) {
-            $message = Utils::buildError('PDO saveIngredients', $e);
+            $message = Utils::buildError('PDO saveIngredients', $e, $this->db);
             $this->response($message, 500);
         } catch (Exception $e) {
-            $message = Utils::buildError('saveIngredients', $e);
+            $message = Utils::buildError('saveIngredients', $e, $this->db);
             $this->response($message, 500);
         }
     }
@@ -160,10 +160,10 @@ class Meals extends API
             $query->execute($params);
             return $query;
         } catch (PDOException $e) {
-            $message = Utils::buildError('PDO deleteIngredients', $e);
+            $message = Utils::buildError('PDO deleteIngredients', $e, $this->db);
             $this->response($message, 500);
         } catch (Exception $e) {
-            $message = Utils::buildError('deleteIngredients', $e);
+            $message = Utils::buildError('deleteIngredients', $e, $this->db);
             $this->response($message, 500);
         }
     }
@@ -202,10 +202,10 @@ class Meals extends API
                 $this->response($res, 200);
             }
         } catch (PDOException $e) {
-            $message = Utils::buildError('PDO saveMeal', $e);
+            $message = Utils::buildError('PDO saveMeal', $e, $this->db);
             $this->response($message, 500);
         } catch (Exception $e) {
-            $message = Utils::buildError('saveMeal', $e);
+            $message = Utils::buildError('saveMeal', $e, $this->db);
             $this->response($message, 500);
         }
     }
@@ -250,10 +250,10 @@ class Meals extends API
             }
             $this->response('', 204);
         } catch (PDOException $e) {
-            $message = Utils::buildError('PDO checkMeal', $e);
+            $message = Utils::buildError('PDO checkMeal', $e, $this->db);
             $this->response($message, 500);
         } catch (Exception $e) {
-            $message = Utils::buildError('checkMeal', $e);
+            $message = Utils::buildError('checkMeal', $e, $this->db);
             $this->response($message, 500);
         }
     }
@@ -277,10 +277,10 @@ class Meals extends API
             }
             $this->response('', 204);
         } catch (PDOException $e) {
-            $message = Utils::buildError('PDO deleteMeal', $e);
+            $message = Utils::buildError('PDO deleteMeal', $e, $this->db);
             $this->response($message, 500);
         } catch (Exception $e) {
-            $message = Utils::buildError('deleteMeal', $e);
+            $message = Utils::buildError('deleteMeal', $e, $this->db);
             $this->response($message, 500);
         }
     }

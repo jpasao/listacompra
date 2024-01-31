@@ -4,9 +4,13 @@ class Utils
 {
     private static $phpInput = 'php://input';
 
-    public static function buildError($endPoint, $exception)
+    public static function buildError($endPoint, $exception, $db)
     {
-        return 'Excepción en ' . $endPoint . ': ' . $exception->getMessage();
+        $message = 'Excepción en ' . $endPoint . ': ' . $exception->getMessage();
+        $to = Config::$MAIL_TO;
+        $subject = Config::$MAIL_LOCAL_SUBJECT . ': ' . $endPoint;
+        Utils::sendSimpleMail($to, $subject, $message, $db);
+        return $message;
     }
 
     public static function getValue($varName, $isPost)
@@ -75,6 +79,19 @@ class Utils
 
         $installationIdHeader = $headers[Config::$INSTALLATION_ID_HEADER];
         return in_array($installationIdHeader, $whiteList->devices);
+    }
+
+    public static function sendSimpleMail($to, $subject, $body, $db)
+    {
+        $message = wordwrap($body, 70, "\r\n");
+        $headers = 'From: ' . Config::$MAIL_FROM;
+        $sent = mail($to, $subject, $message, $headers);
+        if (!$sent) {
+            $sql = "INSERT INTO historic (message) VALUES (:subjectmessage)";
+            $params = array(':subjectmessage' => $subject . ' ' . $message);
+            $query = $db->prepare($sql);
+            $query->execute($params);
+        }
     }
 
     public static function uploadImage()

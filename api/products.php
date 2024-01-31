@@ -43,10 +43,10 @@ class Products extends API
             $defaultResponse = array();
             $this->response(json_encode($defaultResponse), 200);
         } catch (PDOException $e) {
-            $message = Utils::buildError('PDO getProducts', $e);
+            $message = Utils::buildError('PDO getProducts', $e, $this->db);
             $this->response($message, 500);
         } catch (Exception $e) {
-            $message = Utils::buildError('getProducts', $e);
+            $message = Utils::buildError('getProducts', $e, $this->db);
             $this->response($message, 500);
         }
     }
@@ -63,7 +63,7 @@ class Products extends API
             $params = array(':filter' => $filter);
             $query->execute($params);
         } catch (Exception $e) {
-            $message = Utils::buildError('getRows', $e);
+            $message = Utils::buildError('getRows', $e, $this->db);
             $this->response($message, 500);
         }
         return $query;
@@ -124,10 +124,10 @@ class Products extends API
             }
             $this->response('', 204);
         } catch (PDOException $e) {
-            $message = Utils::buildError('PDO saveProduct', $e);
+            $message = Utils::buildError('PDO saveProduct', $e, $this->db);
             $this->response($message, 500);
         } catch (Exception $e) {
-            $message = Utils::buildError('saveProduct', $e);
+            $message = Utils::buildError('saveProduct', $e, $this->db);
             $this->response($message, 500);
         }
     }
@@ -166,10 +166,10 @@ class Products extends API
             }
             $this->response('', 204);
         } catch (PDOException $e) {
-            $message = Utils::buildError('PDO checkProduct', $e);
+            $message = Utils::buildError('PDO checkProduct', $e, $this->db);
             $this->response($message, 500);
         } catch (Exception $e) {
-            $message = Utils::buildError('checkProduct', $e);
+            $message = Utils::buildError('checkProduct', $e, $this->db);
             $this->response($message, 500);
         }
     }
@@ -193,7 +193,7 @@ class Products extends API
             $query->execute($params);
             $row = $query->fetch();
         } catch (Exception $e) {
-            $message = Utils::buildError('getProduct', $e);
+            $message = Utils::buildError('getProduct', $e, $this->db);
             $this->response($message, 500);
         }
         return $row;
@@ -218,10 +218,10 @@ class Products extends API
             }
             $this->response('', 204);
         } catch (PDOException $e) {
-            $message = Utils::buildError('PDO deleteProduct', $e);
+            $message = Utils::buildError('PDO deleteProduct', $e, $this->db);
             $this->response($message, 500);
         } catch (Exception $e) {
-            $message = Utils::buildError('deleteProduct', $e);
+            $message = Utils::buildError('deleteProduct', $e, $this->db);
             $this->response($message, 500);
         }
     }

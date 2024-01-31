@@ -1,6 +1,6 @@
 <?php
 
-spl_autoload_register(function ($filename) 
+spl_autoload_register(function ($filename)
 {
     require_once strtolower($filename) . '.php';
 });
@@ -39,10 +39,10 @@ class Tags extends API
             }
             $this->response('', 204);
         } catch (PDOException $e) {
-            $message = Utils::buildError('PDO getTags', $e);
+            $message = Utils::buildError('PDO getTags', $e, $this->db);
             $this->response($message, 500);
         } catch (Exception $e) {
-            $message = Utils::buildError('getTags', $e);
+            $message = Utils::buildError('getTags', $e, $this->db);
             $this->response($message, 500);
         }
     }
@@ -62,10 +62,10 @@ class Tags extends API
             }
             $this->response('', 204);
         } catch (PDOException $e) {
-            $message = Utils::buildError('PDO saveTag', $e);
+            $message = Utils::buildError('PDO saveTag', $e, $this->db);
             $this->response($message, 500);
         } catch (Exception $e) {
-            $message = Utils::buildError('saveTag', $e);
+            $message = Utils::buildError('saveTag', $e, $this->db);
             $this->response($message, 500);
         }
     }
@@ -78,10 +78,10 @@ class Tags extends API
             $request->bindParam(1, $tagId);
             $request->execute();
         } catch (PDOException $e) {
-            $message = Utils::buildError('PDO deleteTag', $e);
+            $message = Utils::buildError('PDO deleteTag', $e, $this->db);
             $this->response($message, 500);
         } catch (Exception $e) {
-            $message = Utils::buildError('deleteTag', $e);
+            $message = Utils::buildError('deleteTag', $e, $this->db);
             $this->response($message, 500);
         }
     }

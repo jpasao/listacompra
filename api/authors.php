@@ -43,10 +43,10 @@ class Authors extends API
                 $this->buildResponse($authors);
             }
         } catch (PDOException $e) {
-            $message = Utils::buildError('PDO getAuthors', $e);
+            $message = Utils::buildError('PDO getAuthors', $e, $this->db);
             $this->response($message, 500);
         } catch (Exception $e) {
-            $message = Utils::buildError('getAuthors', $e);
+            $message = Utils::buildError('getAuthors', $e, $this->db);
             $this->response($message, 500);
         }
     }
@@ -121,10 +121,10 @@ class Authors extends API
             }
             $this->response($uploadMessage, 204);
         } catch (PDOException $e) {
-            $message = Utils::buildError('PDO saveAuthor', $e);
+            $message = Utils::buildError('PDO saveAuthor', $e, $this->db);
             $this->response($message, 500);
         } catch (Exception $e) {
-            $message = Utils::buildError('saveAuthor', $e);
+            $message = Utils::buildError('saveAuthor', $e, $this->db);
             $this->response($message, 500);
         }
     }
