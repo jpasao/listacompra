@@ -83,15 +83,17 @@ class Utils
 
     public static function sendSimpleMail($to, $subject, $body, $db)
     {
-        $message = wordwrap($body, 70, "\r\n");
-        $headers = 'From: ' . Config::$MAIL_FROM;
-        $sent = mail($to, $subject, $message, $headers);
-        if (!$sent) {
+        $sent = Mail::sendMail($to, $subject, $body);
+        if ($sent != '1') {
+            $message = $sent == '0' ?
+                'Error, mensaje con saltos de línea' :
+                $sent;
             $sql = "INSERT INTO historic (message) VALUES (:subjectmessage)";
             $params = array(':subjectmessage' => $subject . ' ' . $message);
             $query = $db->prepare($sql);
             $query->execute($params);
         }
+        return $sent;
     }
 
     public static function uploadImage()
