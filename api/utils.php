@@ -7,7 +7,7 @@ class Utils
     public static function buildError($endPoint, $exception, $db)
     {
         $message = 'Excepción en ' . $endPoint . ': ' . $exception->getMessage();
-        $to = Config::$MAIL_TO;
+        $to = Config::$MAIL_USERADDRESS;
         $subject = Config::$MAIL_LOCAL_SUBJECT . ': ' . $endPoint;
         Utils::sendSimpleMail($to, $subject, $message, $db);
         return $message;
