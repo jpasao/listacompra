@@ -26,6 +26,7 @@ class API extends REST
             PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true
         );
         $dbName = Utils::CheckWhitelist() ? Config::$DB_NAME : Config::$DB_NAME_EMPTY;
+        Config::$DB_NAME_CHOSEN = $dbName;
         // Generate DB connection
         $this->db = new PDO(Config::$DB_TYPE .
             ':host=' . Config::$DB_HOST .
