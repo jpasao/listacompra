@@ -71,7 +71,8 @@ class Meals extends API
         }
 
         if ($mealData == null) {
-            $this->response('', 204);
+            $defaultResponse = array();
+            $this->response(json_encode($defaultResponse), 200);
         } else {
             $this->buildResponse($mealData);
         }
