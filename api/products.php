@@ -36,7 +36,7 @@ class Products extends API
     {
         try {
             $query = $this->getRows($filter);
-            
+
             if ($query->rowCount() > 0) {
                 $this->buildResponse($query->fetchAll());
             }
@@ -58,7 +58,7 @@ class Products extends API
             if ($filter == null) { $filter = ''; }
 
             $sql = "SELECT ingredientId AS id, name, isChecked, quantity, comment FROM ingredients WHERE isProduct = 1 AND LOWER(name) LIKE CONCAT('%', :filter, '%') ORDER BY isChecked, name";
-            
+
             $query = $this->db->prepare($sql);
             $params = array(':filter' => $filter);
             $query->execute($params);
@@ -109,16 +109,16 @@ class Products extends API
                     $product->user = $authorId;
                     $notificationOperation = "añadido" . " " . $product->name;
                     $notificationMessage = $this->buildMessage($notificationOperation, $authorName);
-                    $notification->buildMessageByType(Config::$MAIN_TOPIC, $product, 'POST', $notificationMessage);
+                    $notification->buildDataMessage($product, 'POST', $notificationMessage, $this->db);
                 } else {
                     $product = $this->getProduct($productId);
                     $product->user = $authorId;
 
                     $notificationOperation = "modificado" . " " . $product->name;
                     $notificationMessage = $this->buildMessage($notificationOperation, $authorName);
-                    $notification->buildMessageByType(Config::$MAIN_TOPIC, $product, 'PUT', $notificationMessage);
+                    $notification->buildDataMessage($product, 'PUT', $notificationMessage, $this->db);
                 }
-                
+
                 $res = json_encode($response);
                 $this->response($res, 200);
             }
@@ -147,12 +147,12 @@ class Products extends API
                 $check = "0";
                 $notificationOperation = "desmarcado";
             }
-            
+
             $sql = "UPDATE ingredients SET isChecked = :check, quantity = 1 WHERE ingredientId = :productId";
             $params = array(':check' => $check, ':productId' => $productId);
             $query = $this->db->prepare($sql);
             $query->execute($params);
-            
+
             if ($query) {
                 $product = $this->getProduct($productId);
                 $product->user = $authorId;
@@ -160,8 +160,8 @@ class Products extends API
                 $notificationMessage = $this->buildMessage($notificationOperation, $authorName);
 
                 $notification = new Message();
-                $notification->buildMessageByType(Config::$MAIN_TOPIC, $product, 'PATCH', $notificationMessage);
-                
+                $notification->buildDataMessage($product, 'PATCH' . $check, $notificationMessage, $this->db);
+
                 $this->getProducts('');
             }
             $this->response('', 204);
@@ -187,7 +187,7 @@ class Products extends API
     {
         try {
             $sql = "SELECT ingredientId AS id, name, isChecked, quantity, comment FROM ingredients WHERE ingredientId = :productId";
-            
+
             $query = $this->db->prepare($sql);
             $params = array(':productId' => $productId);
             $query->execute($params);
@@ -209,11 +209,11 @@ class Products extends API
             $params = array(':productId' => $productId);
             $query = $this->db->prepare($sql);
             $query->execute($params);
-            
+
             if ($query) {
                 $notification = new Message();
-                $notification->buildMessageByType(Config::$OTHER_TOPIC, $authorId, '', '');
-                
+                $notification->buildDataMessage($authorId, 'DELETE', '', $this->db);
+
                 $this->getProducts('');
             }
             $this->response('', 204);

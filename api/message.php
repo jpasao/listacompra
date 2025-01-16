@@ -9,33 +9,10 @@ class Message
         $this->token = $this->getToken()->access_token;
     }
 
-    public function buildMessageByType($type, $object, $operation, $notificationMessage)
+    public function buildDataMessage($object, $operation, $notificationMessage, $db)
     {
-        switch ($type) {
-            case Config::$MAIN_TOPIC:
-                $this->buildDataMessage($object, $operation, $notificationMessage);
-                break;
-            case Config::$MEAL_TOPIC: 
-            case Config::$OTHER_TOPIC:
-                $this->buildNoDataMessage($object, $type);
-                break;
-            default:
-                break;
-        }
-    }
-
-    private function buildDataMessage($product, $operation, $notificationMessage)
-    {
-        $data = array(
-            'operation' => $operation,
-            'productId' => Utils::ensureNotNull($product->id),
-            'name' => Utils::ensureNotNull($product->name),
-            'quantity' => Utils::ensureNotNull($product->quantity),
-            'comment' => Utils::ensureNotNull($product->comment),
-            'isChecked' => Utils::ensureNotNull($product->isChecked),
-            'user' => Utils::ensureNotNull($product->user)
-        );
-
+        $data = $this->getMessageData($object, $operation);
+        $this->logOperation($data, $db);
         $notification = array(
             'title' => Config::$NOTIFICATION_TITLE,
             'body' => $notificationMessage
@@ -46,12 +23,12 @@ class Message
             'notification' => $notification,
             'data' => $data
         );
-        
+
         $obj = array('message' => $message);
         $this->sendRequest($obj);
     }
 
-    private function buildNoDataMessage($authorId, $topic)
+    public function buildNoDataMessage($authorId, $topic)
     {
         $notification = array(
             'title' => Config::$NOTIFICATION_TITLE,
@@ -62,9 +39,21 @@ class Message
             'topic' => $topic,
             'notification' => $notification
         );
-        
+
         $obj = array('message' => $message);
         $this->sendRequest($obj);
+    }
+
+    private function getMessageData($product, $operation) {
+        return array(
+            'operation' => $operation,
+            'productId' => Utils::ensureNotNull($product->id),
+            'name' => Utils::ensureNotNull($product->name),
+            'quantity' => Utils::ensureNotNull($product->quantity),
+            'comment' => Utils::ensureNotNull($product->comment),
+            'isChecked' => Utils::ensureNotNull($product->isChecked),
+            'user' => Utils::ensureNotNull($product->user)
+        );
     }
 
     private function sendRequest($data)
@@ -133,8 +122,46 @@ class Message
         ));
         $context  = stream_context_create($options);
         $responseText = file_get_contents(Config::$FIREBASE_TOKEN, false, $context);
-        
+
         return json_decode($responseText);
+    }
+
+    private function logOperation($data, $db) {
+        try {
+            $code = $this->getOperationCode($data['operation']);
+            $user = isset($data['user']) ? $data['user'] : 6; // Default user
+            $productId = $data['productId'];
+            $name = $data['name'];
+
+            $request = $db->prepare('CALL HistoricSave(?, ?, ?, ?)');
+            $request->bindParam(1, $user);
+            $request->bindParam(2, $productId);
+            $request->bindParam(3, $name);
+            $request->bindParam(4, $code);
+
+            $request->execute();
+        } catch (PDOException $e) {
+            $message = Utils::buildError('PDO logOperation', $e, $this->db);
+            $this->response($message, 500);
+        } catch (Exception $e) {
+            $message = Utils::buildError('logOperation', $e, $this->db);
+            $this->response($message, 500);
+        }
+    }
+
+    private function getOperationCode($operation) {
+        // operationId meanings: 1->create, 2->update, 3->check, 4->uncheck, 5->delete
+        // operations: POST->1, PUT->2, PATCH1->3, PATCH0->4, DELETE->5
+        $code = 0;
+        switch ($operation) {
+            case 'POST': $code = 1; break;
+            case 'PUT': $code = 2; break;
+            case 'PATCH0': $code = 3; break; 
+            case 'PATCH1': $code = 4; break;
+            case 'DELETE': $code = 5; break;
+            default: break;
+        }
+        return $code;
     }
 }
 

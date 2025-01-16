@@ -31,7 +31,7 @@ class Others extends API
             $others = [];
             $request = $this->db->prepare('CALL OthersData()');
             $request->execute();
-            
+
             if ($request->rowCount() > 0) {
                 $rows = array();
 
@@ -89,10 +89,10 @@ class Others extends API
 
             if ($request) {
                 $notification = new Message();
-                $notification->buildMessageByType(Config::$OTHER_TOPIC, $authorId, '', '');
+                $notification->buildNoDataMessage($authorId, Config::$OTHER_TOPIC);
                 $this->response('', 200);
             }
-            
+
         } catch (PDOException $e) {
             $message = Utils::buildError('PDO saveOther', $e, $this->db);
             $this->response($message, 500);
@@ -112,11 +112,11 @@ class Others extends API
             $params = array(':otherId' => $otherId);
             $query = $this->db->prepare($sql);
             $query->execute($params);
-            
+
             if ($query) {
                 $notification = new Message();
-                $notification->buildMessageByType(Config::$OTHER_TOPIC, $authorId, '', '');
-                
+                $notification->buildNoDataMessage($authorId, Config::$OTHER_TOPIC);
+
                 $this->getOthersList();
             }
             $this->response('', 204);

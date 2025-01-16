@@ -38,7 +38,7 @@ class Meals extends API
             if (isset($_GET['mealId'])) {
                 $mealId = $_GET['mealId'];
             }
-            
+
             if ($mealId == null) {
                 $this->getMealList();
             } else {
@@ -84,7 +84,7 @@ class Meals extends API
         $request = $this->db->prepare('CALL MealData()');
 
         $request->execute();
-        
+
         if ($request->rowCount() > 0) {
             $rows = array();
 
@@ -156,7 +156,7 @@ class Meals extends API
         try {
             $sql = 'DELETE FROM mealingredients WHERE mealId = :mealId';
             $params = array(':mealId' => $mealId);
-            
+
             $query = $this->db->prepare($sql);
             $query->execute($params);
             return $query;
@@ -168,7 +168,7 @@ class Meals extends API
             $this->response($message, 500);
         }
     }
-    
+
     public function saveMeal($isPost)
     {
         $sql = '';
@@ -189,8 +189,8 @@ class Meals extends API
                 $params = array(':name' => $name, ':isLunch' => $isLunch, ':mealId' => $mealId);
                 $sql = 'UPDATE meals SET name = :name, isLunch = :isLunch WHERE mealId = :mealId';
             }
-            $notification->buildMessageByType(Config::$MEAL_TOPIC, $authorId, '', '');
-            
+            $notification->buildNoDataMessage($authorId, Config::$MEAL_TOPIC);
+
             $query = $this->db->prepare($sql);
             $query->execute($params);
             if ($query) {
@@ -246,7 +246,7 @@ class Meals extends API
 
             if ($query) {
                 $notification = new Message();
-                $notification->buildMessageByType(Config::$MEAL_TOPIC, $authorId, '', '');
+                $notification->buildNoDataMessage($authorId, Config::$MEAL_TOPIC);
                 $this->getMealList();
             }
             $this->response('', 204);
@@ -269,11 +269,11 @@ class Meals extends API
             $params = array(':mealId' => $mealId);
             $query = $this->db->prepare($sql);
             $query->execute($params);
-            
+
             if ($query) {
                 $notification = new Message();
-                $notification->buildMessageByType(Config::$MEAL_TOPIC, $authorId, '', '');
-                
+                $notification->buildNoDataMessage($authorId, Config::$MEAL_TOPIC);
+
                 $this->getMealList();
             }
             $this->response('', 204);

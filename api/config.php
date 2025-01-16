@@ -28,16 +28,17 @@ class Config
 	public static $URL_PUBLIC_FOLDER = 'public';
 	public static $URL_PROTOCOL = 'http://';
 	public static $MAX_IMAGE_SIZE = 2 * 1024 * 1024;
-	public static $WHITELIST_PATH = '***';
+	public static $WHITELIST_PATH = '/var/allowedDevices.json';
 	public static $INSTALLATION_ID_HEADER = 'INSTALLATIONID';
 
 	// DB Constants
 	public static $DB_TYPE = 'mysql';
 	public static $DB_HOST = 'localhost';
-	public static $DB_NAME = '***';
-	public static $DB_NAME_EMPTY = '***';
-	public static $DB_USER = '***';
-	public static $DB_PASS = '***';
+	public static $DB_NAME = 'recetas';
+	public static $DB_NAME_EMPTY = 'recetasempty';
+	public static $DB_NAME_CHOSEN = '';
+	public static $DB_USER = 'invitado';
+	public static $DB_PASS = 'invitado';
 	public static $DB_CHARSET = 'utf8mb4';
 	public static $DB_COLLATION = 'utf8mb4_unicode_ci';
 
@@ -48,14 +49,17 @@ class Config
 	public static $NOTIFICATION_TITLE = 'ListaDLC';
 	public static $NOTIFICATION_MESSAGE = "Alguien ha xxx en la lista de la compra. Echa un vistazo.";
 	public static $NOTIFICATION_TTL = 3600;
-	public static $SERVICE_ACCOUNT_PATH = '***';
-	public static $FIREBASE_PROJECT_URL = '***';
+	public static $SERVICE_ACCOUNT_PATH = '/var/listacompra-636c5-firebase-adminsdk-yakfo-15eb2ba912.json';
+	public static $FIREBASE_PROJECT_URL = 'https://fcm.googleapis.com/v1/projects/listacompra-636c5/messages:send';
 	public static $FIREBASE_SCOPE = 'https://www.googleapis.com/auth/firebase.messaging';
 	public static $FIREBASE_TOKEN = 'https://oauth2.googleapis.com/token';
 
 	// Mail Constants
-	public static $MAIL_FROM = '***';
-	public static $MAIL_TO = '***';
+	public static $MAIL_HOST = 'smtp.gmail.com';
+	public static $MAIL_PORT = '587';
+	public static $MAIL_USERADDRESS = 'trablete@gmail.com';
+	public static $MAIL_USERPASS = 'nill fepz ykzp zvaq';
+	public static $MAIL_USERNAME = 'Pablito';
 	public static $MAIL_LOCAL_SUBJECT = 'Ha ocurrido un error en el api';
-	public static $MAIL_APP_SUBJECT = 'Ha ocurrido un error en la app';
+	public static $MAIL_APP_SUBJECT = 'Mensaje de ListaDLC';
 }
