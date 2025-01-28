@@ -10,7 +10,7 @@ spl_autoload_register(function ($filename)
 class API extends REST
 {
     public $db = null;
-    private $endPoints = array('product', 'author', 'meal', 'other', 'system');
+    private $endPoints = array('product', 'author', 'meal', 'other', 'system', 'historic');
 
     public function __construct()
     {
@@ -46,7 +46,7 @@ class API extends REST
         $request = trim($_REQUEST['x']);
         $bar = '/';
         $queryWithoutParams = strpos($request, $bar);
-        
+
         if ($queryWithoutParams === false) {
             $func = strtolower(trim(str_replace($bar, '', $request))); //x parameter from RewriteRule
             $this->checkFunction($func, null);
@@ -91,7 +91,7 @@ class API extends REST
         $products = new Products();
         $products->callMethod($filter);
     }
-    
+
     private function author()
     {
         $authors = new Authors();
@@ -113,6 +113,12 @@ class API extends REST
     private function system()
     {
         $systems = new Systems();
+        $systems->callMethod();
+    }
+
+    private function historic()
+    {
+        $systems = new Historic();
         $systems->callMethod();
     }
 }

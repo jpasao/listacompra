@@ -23,7 +23,7 @@ class Utils
             parse_str(file_get_contents(self::$phpInput), $_PUT);
             $arr = $_PUT;
         }
-        
+
         if (isset($arr[$varName]) && empty($arr[$varName]) === false) {
             $res = $arr[$varName];
         }
@@ -35,7 +35,7 @@ class Utils
         $res = null;
 
         parse_str(file_get_contents(self::$phpInput), $_PATCH);
-        
+
         if (isset($_PATCH[$varName]) && empty($_PATCH[$varName]) === false) {
             $res = $_PATCH[$varName];
         }
@@ -64,7 +64,7 @@ class Utils
     public static function ensureNotNull($str)
     {
         $res = $str;
-        if (strlen($str) == 0) {
+        if (strlen($str ?? '') == 0) {
             $res = '';
         }
         return $res;

@@ -205,6 +205,8 @@ class Products extends API
             $params = Utils::getDELETEValues();
             $productId = $params[4];
             $authorId = $params[5];
+            $product = $this->getProduct($productId);
+            $product->user = $authorId;
             $sql = "DELETE FROM ingredients WHERE ingredientId = :productId";
             $params = array(':productId' => $productId);
             $query = $this->db->prepare($sql);
@@ -212,7 +214,7 @@ class Products extends API
 
             if ($query) {
                 $notification = new Message();
-                $notification->buildDataMessage($authorId, 'DELETE', '', $this->db);
+                $notification->buildDataMessage($product, 'DELETE', '', $this->db);
 
                 $this->getProducts('');
             }
