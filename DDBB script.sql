@@ -44,9 +44,9 @@ CREATE TABLE `historic` (
   `itemId` int(11) NOT NULL,
   `itemName` text NOT NULL,
   `operationId` smallint(6) NOT NULL COMMENT '1->create, 2->update, 3->check, 4->uncheck, 5->delete',
-  `createdAt` timestamp NOT NULL DEFAULT current_timestamp(),
+  `createdAt` datetime DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -81,7 +81,7 @@ CREATE TABLE `ingredients` (
   `quantity` tinyint(4) DEFAULT 1,
   `comment` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`ingredientId`)
-) ENGINE=InnoDB AUTO_INCREMENT=993 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1005 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -337,6 +337,31 @@ CREATE TABLE `tags` (
 --
 -- Dumping events for database 'recetas'
 --
+/*!50106 SET @save_time_zone= @@TIME_ZONE */ ;
+/*!50106 DROP EVENT IF EXISTS `DeleteOldHistoric` */;
+DELIMITER ;;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;;
+/*!50003 SET character_set_client  = utf8mb4 */ ;;
+/*!50003 SET character_set_results = utf8mb4 */ ;;
+/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;;
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;;
+/*!50003 SET @saved_time_zone      = @@time_zone */ ;;
+/*!50003 SET time_zone             = 'SYSTEM' */ ;;
+/*!50106 CREATE*/ /*!50117 DEFINER=`root`@`localhost`*/ /*!50106 EVENT `DeleteOldHistoric` ON SCHEDULE EVERY 1 DAY STARTS '2025-01-18 00:00:00' ON COMPLETION NOT PRESERVE DISABLE ON SLAVE DO BEGIN
+	DELETE
+	FROM historic
+	WHERE createdAt <= DATE(NOW()) - INTERVAL 30 DAY;
+END */ ;;
+/*!50003 SET time_zone             = @saved_time_zone */ ;;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;;
+/*!50003 SET character_set_results = @saved_cs_results */ ;;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;;
+DELIMITER ;
+/*!50106 SET TIME_ZONE= @save_time_zone */ ;
 
 --
 -- Dumping routines for database 'recetas'
@@ -473,7 +498,7 @@ DELIMITER ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'NO_AUTO_VALUE_ON_ZERO' */ ;
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `HistoricData` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -487,10 +512,16 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `HistoricData`(
 	IN pDays INT
 )
 BEGIN
+	DECLARE vUserId INT;
+	SELECT authorId INTO vUserId FROM authors WHERE authorId = pUserId;
+	IF (vUserId = 6 OR vUserId IS NULL) THEN 
+		SET vUserId = -1;
+	END IF;
+
 	SELECT id, userId, userName, itemId, itemName, operationId, createdAt
 	FROM historic
 	WHERE 1=1
-		AND (pUserId IS NULL OR userId = pUserId)
+		AND (vUserId = -1 OR userId = pUserId)
 		AND (pDays = -1 OR createdAt >= DATE(NOW()) - INTERVAL pDays DAY)
 	ORDER BY id DESC;
 END ;;
@@ -983,5 +1014,7 @@ DELIMITER ;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2025-01-28 17:09:50
 
 -- Dump completed on 2025-01-16 17:03:50

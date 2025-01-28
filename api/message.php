@@ -129,7 +129,7 @@ class Message
     private function logOperation($data, $db) {
         try {
             $code = $this->getOperationCode($data['operation']);
-            $user = isset($data['user']) ? $data['user'] : 6; // Default user
+            $user = strlen($data['user'] ?? '') != 0 ? $data['user'] : 6; // Default user
             $productId = $data['productId'];
             $name = $data['name'];
 
