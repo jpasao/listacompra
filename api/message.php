@@ -1,6 +1,6 @@
 <?php
 
-class Message
+class Message extends API
 {
     private $token;
 
@@ -9,10 +9,15 @@ class Message
         $this->token = $this->getToken()->access_token;
     }
 
-    public function buildDataMessage($object, $operation, $notificationMessage, $db)
+    public function buildDataMessage($object, $operation, $notificationMessage, $db, $originalData = '')
     {
         $data = $this->getMessageData($object, $operation);
-        $this->logOperation($data, $db);
+        $additionaldata['firebaseSent'] = 0;
+        $additionaldata['remoteAddr'] = $_SERVER['REMOTE_ADDR'];
+        $additionaldata['originalData'] = $originalData;
+        $additionaldata['id'] = 0;
+        $additionaldata['id'] = $this->logOperation($data, $additionaldata, $db);
+
         $notification = array(
             'title' => Config::$NOTIFICATION_TITLE,
             'body' => $notificationMessage
@@ -25,7 +30,8 @@ class Message
         );
 
         $obj = array('message' => $message);
-        $this->sendRequest($obj);
+        $additionaldata['firebaseSent'] = $this->sendRequest($obj) ? 1 : 0;
+        $this->logOperation($data, $additionaldata, $db);
     }
 
     public function buildNoDataMessage($authorId, $topic)
@@ -56,8 +62,57 @@ class Message
         );
     }
 
+    private function logOperation($data, $additionalData, $db) {
+        try {
+            $id = $additionalData['id'];
+            $user = strlen($data['user'] ?? '') != 0 ? $data['user'] : 6; // Default user
+            $productId = $data['productId'];
+            $name = $data['name'];
+            $code = $this->getOperationCode($data['operation']);
+            $firebaseSent = $additionalData['firebaseSent'];
+            $remoteAddr = $additionalData['remoteAddr'];
+            $originalData = $additionalData['originalData'];
+
+            $request = $db->prepare('CALL HistoricSave(?, ?, ?, ?, ?, ?, ?, ?)');
+            $request->bindParam(1, $id);
+            $request->bindParam(2, $user);
+            $request->bindParam(3, $productId);
+            $request->bindParam(4, $name);
+            $request->bindParam(5, $code);
+            $request->bindParam(6, $firebaseSent);
+            $request->bindParam(7, $remoteAddr);
+            $request->bindParam(8, $originalData);
+     
+            $request->execute();
+            return Utils::getLastInsertedId($db);
+        } catch (PDOException $e) {
+            $message = Utils::buildError('PDO logOperation', $e, $db);
+            $this->response($message, 500);
+        } catch (Exception $e) {
+            $message = Utils::buildError('logOperation', $e, $db);
+            $this->response($message, 500);
+        }
+    }
+
+    private function getOperationCode($operation) {
+        // operationId meanings: 1->create, 2->update, 3->check, 4->uncheck, 5->delete
+        // operations: POST->1, PUT->2, PATCH1->3, PATCH0->4, DELETE->5
+        $code = 0;
+        switch ($operation) {
+            case 'POST': $code = 1; break;
+            case 'PUT': $code = 2; break;
+            case 'PATCH0': $code = 3; break; 
+            case 'PATCH1': $code = 4; break;
+            case 'DELETE': $code = 5; break;
+            default: break;
+        }
+        return $code;
+    }
+
     private function sendRequest($data)
     {
+        $return = new stdClass;
+        $response = false;
         $headers = array(
             "Content-Type: application/json",
             "Authorization: Bearer " . $this->token);
@@ -71,8 +126,12 @@ class Message
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
-        curl_exec($ch);
+        $return->response = curl_exec($ch);
+        if ($return->response) {
+            $response = true;
+        }
         curl_close($ch);
+        return $response;
     }
 
     private function base64UrlEncode($text)
@@ -110,7 +169,7 @@ class Message
         $base64UrlHeader = $this->base64UrlEncode($header);
         $base64UrlPayload = $this->base64UrlEncode($payload);
 
-        $result = openssl_sign($base64UrlHeader . "." . $base64UrlPayload, $signature, $secret, OPENSSL_ALGO_SHA256);
+        openssl_sign($base64UrlHeader . "." . $base64UrlPayload, $signature, $secret, OPENSSL_ALGO_SHA256);
         $base64UrlSignature = $this->base64UrlEncode($signature);
 
         $jwt = $base64UrlHeader . "." . $base64UrlPayload . "." . $base64UrlSignature;
@@ -124,44 +183,6 @@ class Message
         $responseText = file_get_contents(Config::$FIREBASE_TOKEN, false, $context);
 
         return json_decode($responseText);
-    }
-
-    private function logOperation($data, $db) {
-        try {
-            $code = $this->getOperationCode($data['operation']);
-            $user = strlen($data['user'] ?? '') != 0 ? $data['user'] : 6; // Default user
-            $productId = $data['productId'];
-            $name = $data['name'];
-
-            $request = $db->prepare('CALL HistoricSave(?, ?, ?, ?)');
-            $request->bindParam(1, $user);
-            $request->bindParam(2, $productId);
-            $request->bindParam(3, $name);
-            $request->bindParam(4, $code);
-
-            $request->execute();
-        } catch (PDOException $e) {
-            $message = Utils::buildError('PDO logOperation', $e, $this->db);
-            $this->response($message, 500);
-        } catch (Exception $e) {
-            $message = Utils::buildError('logOperation', $e, $this->db);
-            $this->response($message, 500);
-        }
-    }
-
-    private function getOperationCode($operation) {
-        // operationId meanings: 1->create, 2->update, 3->check, 4->uncheck, 5->delete
-        // operations: POST->1, PUT->2, PATCH1->3, PATCH0->4, DELETE->5
-        $code = 0;
-        switch ($operation) {
-            case 'POST': $code = 1; break;
-            case 'PUT': $code = 2; break;
-            case 'PATCH0': $code = 3; break; 
-            case 'PATCH1': $code = 4; break;
-            case 'DELETE': $code = 5; break;
-            default: break;
-        }
-        return $code;
     }
 }
 
