@@ -1,6 +1,6 @@
 <?php
 
-class Message
+class Message extends API
 {
     private $token;
 
@@ -12,7 +12,11 @@ class Message
     public function buildDataMessage($object, $operation, $notificationMessage, $db)
     {
         $data = $this->getMessageData($object, $operation);
-        $this->logOperation($data, $db);
+        $additionaldata['firebaseSent'] = 0;
+        $additionaldata['remoteAddr'] = $_SERVER['REMOTE_ADDR'];
+        $additionaldata['id'] = 0;
+        $additionaldata['id'] = $this->logOperation($data, $additionaldata, $db);
+
         $notification = array(
             'title' => Config::$NOTIFICATION_TITLE,
             'body' => $notificationMessage
@@ -25,7 +29,8 @@ class Message
         );
 
         $obj = array('message' => $message);
-        $this->sendRequest($obj);
+        $additionaldata['firebaseSent'] = $this->sendRequest($obj) ? 1 : 0;
+        $this->logOperation($data, $additionaldata, $db);
     }
 
     public function buildNoDataMessage($authorId, $topic)
@@ -58,6 +63,8 @@ class Message
 
     private function sendRequest($data)
     {
+        $return = new stdClass;
+        $response = false;
         $headers = array(
             "Content-Type: application/json",
             "Authorization: Bearer " . $this->token);
@@ -71,8 +78,12 @@ class Message
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
-        curl_exec($ch);
+        $return->response = curl_exec($ch);
+        if ($return->response) {
+            $response = true;
+        }
         curl_close($ch);
+        return $response;
     }
 
     private function base64UrlEncode($text)
@@ -110,7 +121,7 @@ class Message
         $base64UrlHeader = $this->base64UrlEncode($header);
         $base64UrlPayload = $this->base64UrlEncode($payload);
 
-        $result = openssl_sign($base64UrlHeader . "." . $base64UrlPayload, $signature, $secret, OPENSSL_ALGO_SHA256);
+        openssl_sign($base64UrlHeader . "." . $base64UrlPayload, $signature, $secret, OPENSSL_ALGO_SHA256);
         $base64UrlSignature = $this->base64UrlEncode($signature);
 
         $jwt = $base64UrlHeader . "." . $base64UrlPayload . "." . $base64UrlSignature;
@@ -126,25 +137,39 @@ class Message
         return json_decode($responseText);
     }
 
-    private function logOperation($data, $db) {
+    private function logOperation($data, $additionalData, $db) {
         try {
-            $code = $this->getOperationCode($data['operation']);
+            $id = $additionalData['id'];
+            $newId = 0;
             $user = strlen($data['user'] ?? '') != 0 ? $data['user'] : 6; // Default user
             $productId = $data['productId'];
             $name = $data['name'];
+            $code = $this->getOperationCode($data['operation']);
+            $firebaseSent = $additionalData['firebaseSent'];
+            $remoteAddr = $additionalData['remoteAddr'];
 
-            $request = $db->prepare('CALL HistoricSave(?, ?, ?, ?)');
-            $request->bindParam(1, $user);
-            $request->bindParam(2, $productId);
-            $request->bindParam(3, $name);
-            $request->bindParam(4, $code);
-
+            $request = $db->prepare('CALL HistoricSave(?, ?, ?, ?, ?, ?, ?)');
+            $request->bindParam(1, $id);
+            $request->bindParam(2, $user);
+            $request->bindParam(3, $productId);
+            $request->bindParam(4, $name);
+            $request->bindParam(5, $code);
+            $request->bindParam(6, $firebaseSent);
+            $request->bindParam(7, $remoteAddr);
+     
             $request->execute();
+            $sql = 'SELECT LAST_INSERT_ID() AS id';
+            $query = $db->prepare($sql);
+            $query->execute();
+            if ($query->rowCount() > 0) {
+                $newId = $query->fetchAll();
+            }
+            return $newId[0]->id;
         } catch (PDOException $e) {
-            $message = Utils::buildError('PDO logOperation', $e, $this->db);
+            $message = Utils::buildError('PDO logOperation', $e, $db);
             $this->response($message, 500);
         } catch (Exception $e) {
-            $message = Utils::buildError('logOperation', $e, $this->db);
+            $message = Utils::buildError('logOperation', $e, $db);
             $this->response($message, 500);
         }
     }
