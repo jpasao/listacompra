@@ -45,8 +45,11 @@ CREATE TABLE `historic` (
   `itemName` text NOT NULL,
   `operationId` smallint(6) NOT NULL COMMENT '1->create, 2->update, 3->check, 4->uncheck, 5->delete',
   `createdAt` datetime DEFAULT current_timestamp(),
+  `firebaseSent` tinyint(4) DEFAULT NULL,
+  `remoteAddr` varchar(45) DEFAULT NULL,
+  `originalData` text DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=83 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -81,7 +84,7 @@ CREATE TABLE `ingredients` (
   `quantity` tinyint(4) DEFAULT 1,
   `comment` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`ingredientId`)
-) ENGINE=InnoDB AUTO_INCREMENT=1005 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1006 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -438,7 +441,6 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `ElementSave`(
 	IN `pText2` VARCHAR(8000)
 )
 BEGIN
-    -- Insert into tables depending provided initial:
 
     -- E: recipetags:				pTagIds ->					tagId
     -- F: images:				    pImageNames ->             	name
@@ -447,14 +449,21 @@ BEGIN
     --                          	pIngredientNotes ->        	ingredientNote
     -- N: notes:                	pNotes ->                  	note
     -- P: pasos:                	pSteps ->          			step
-       
-    DECLARE nElements INT DEFAULT 0; -- Separator number in string
+    
+    -- E: recipetags:				pTagIds ->					tagId
+    -- F: images:				    pImageNames ->             	name
+    -- I: recipeingredients:		pIngredientIds ->          	ingredientId
+    --                          	pIngredientsNumber ->    	number
+    --                          	pIngredientNotes ->        	ingredientNote
+    -- N: notes:                	pNotes ->                  	note
+    -- P: pasos:                	pSteps ->          			step
+
+    DECLARE nElements INT DEFAULT 0; 
     DECLARE counter INT DEFAULT 1;
-    DECLARE vElement0 VARCHAR(1000) DEFAULT NULL;    -- Store column content from each loop
+    DECLARE vElement0 VARCHAR(1000) DEFAULT NULL;    
     DECLARE vElement1 VARCHAR(1000) DEFAULT NULL;
     DECLARE vElement2 VARCHAR(1000) DEFAULT NULL;
-    
-    -- Count separators. pText1 is always filled 
+ 
     SELECT LENGTH(pText1) - LENGTH(REPLACE(pText1, '¬' ,'')) INTO nElements;
     
     IF (pText1 IS NOT NULL) THEN
@@ -467,7 +476,6 @@ BEGIN
             INTO vElement0, vElement1, vElement2; 
                                      
             IF (LENGTH(vElement1) > 0) THEN
-                -- Insert into table depending pTable value
                 CASE pTable
                     WHEN 'E' THEN
                         INSERT INTO recipetags (tagId, recipeId)
@@ -518,7 +526,7 @@ BEGIN
 		SET vUserId = -1;
 	END IF;
 
-	SELECT id, userId, userName, itemId, itemName, operationId, createdAt
+	SELECT id, userId, userName, itemId, itemName, operationId, createdAt, firebaseSent, remoteAddr, originalData
 	FROM historic
 	WHERE 1=1
 		AND (vUserId = -1 OR userId = pUserId)
@@ -541,10 +549,14 @@ DELIMITER ;
 /*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `HistoricSave`(
+	IN pHistoricId INT,
 	IN pUserId INT,
 	IN pItemId INT,
 	IN pItemName TEXT,
-	IN pOperationId SMALLINT
+	IN pOperationId SMALLINT,
+	IN pFirebaseSent TINYINT(4),
+	IN pRemoteAddr VARCHAR(45),
+	IN pOriginalData TEXT
 )
 BEGIN
 	DECLARE vUserName VARCHAR(100);
@@ -553,8 +565,12 @@ BEGIN
 		SET vUserName = 'Desconocido';
 	END IF;
 	
-	INSERT INTO historic (userId, userName, itemId, itemName, operationId)
-	VALUES (pUserId, vUserName, pItemId, pItemName, pOperationId);
+	IF (pHistoricId = 0) THEN
+		INSERT INTO historic (userId, userName, itemId, itemName, operationId, firebaseSent, remoteAddr, originalData)
+		VALUES (pUserId, vUserName, pItemId, pItemName, pOperationId, pFirebaseSent, pRemoteAddr, pOriginalData);
+	ELSE 
+		UPDATE historic SET firebaseSent = 1 WHERE id = pHistoricId;
+	END IF;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -813,34 +829,34 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `RecipeDetail`(
 BEGIN
 	-- Update recipe views
 	UPDATE recipes SET views = views + 1 WHERE recipeId = pRecipeId;
-	-- Recipe data
+
     SELECT R.recipeId, R.name, A.name AS authorName, A.image AS authorImage, R.date, R.views, R.preparationMinutes, D.name AS difficulty
     FROM recipes R 
     	INNER JOIN authors A ON R.authorId = A.authorId
     	INNER JOIN difficulties D ON D.difficultId = R.difficultyId
 	 WHERE recipeId = pRecipeId;
-	-- Ingredient list
+	
     SELECT I.ingredientId, I.name, RI.number, RI.ingredientNote
     FROM ingredients I
 		INNER JOIN recipeingredients RI ON RI.ingredientId = I.ingredientId
     WHERE RI.recipeId = pRecipeId
     ORDER BY I.name;
-    -- Tag list
+    
     SELECT T.tagId, T.name
     FROM tags T
 		INNER JOIN recipetags RT ON RT.tagId = T.tagId
     WHERE RT.recipeId = pRecipeId
     ORDER BY T.name;
-    -- Recipe steps
+    
     SELECT step
     FROM steps
     WHERE recipeId = pRecipeId
     ORDER BY stepId;
-    -- Notes
+    
     SELECT note
     FROM notes
     WHERE recipeId = pRecipeId;    
-    -- Recipe images
+    
     SELECT name
     FROM images
     WHERE recipeId = pRecipeId;  
@@ -907,22 +923,9 @@ BEGIN
 		UPDATE recipes SET authorId = pAuthorId, name =	pRecipeName, difficultyId = pDifficultyId, preparationMinutes = pPreparationMinutes WHERE recipeId = vRecipeId;
 		CALL RecipeElementsDelete(vRecipeId);				
 	ELSE 
-	    -- Insert new recipe name and get new id
 	    INSERT INTO recipes (name, authorId, DATE, difficultyId, preparationMinutes) VALUES (pRecipeName, pAuthorId, CURDATE(), pDifficultyId, pPreparationMinutes);
 	    SELECT LAST_INSERT_ID() INTO vRecipeId;		
 	END IF;
-    
-    -- Insert into tables depending provided initial:
-
-    -- E: recipetags:				pTagIds ->					tagId
-    -- F: images:				    pImageNames ->             	name
-    -- I: recipeingredients:		pIngredientIds ->     		ingredientId
-    --                          	pIngredientsNumber ->    	number
-    --                          	pIngredientNotes ->        	ingredientNote
-    -- N: notes:                	pNotes ->                  	note
-    -- P: pasos:                	pSteps ->          			step
-    
-    -- Call ElementSave with each table value string (separator is ¬) 
     CALL ElementSave('E', vRecipeId, '', pTagIds, '');
     CALL ElementSave('F', vRecipeId, '', pImageNames, '');
     CALL ElementSave('I', vRecipeId, pIngredientIds, pIngredientsNumber, pIngredientNotes);
@@ -1014,7 +1017,3 @@ DELIMITER ;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
-
--- Dump completed on 2025-01-28 17:09:50
-
--- Dump completed on 2025-01-16 17:03:50
