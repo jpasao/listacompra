@@ -79,12 +79,15 @@ class Products extends API
             $authorName = Utils::getValue('authorName', $isPost);
             $quantity = Utils::getValue('quantity', $isPost);
             $comment = Utils::getValue('comment', $isPost);
+            $originalData = '';
             $productId = -1;
             if ($isPost) {
                 $sql = "INSERT INTO ingredients (name, isProduct, isChecked, quantity, comment) VALUES (:name, 1, 0, :quantity, :comment)";
                 $params = array(':name' => $name, ':quantity' => $quantity, ':comment' => $comment);
             } else {
                 $productId = Utils::getValue('productId', $isPost);
+                $product = $this->getProduct($productId);
+                $originalData = $this->getProductSummary($product);
                 $sql = "UPDATE ingredients SET name = :name, quantity = :quantity, comment = :comment WHERE ingredientId = :productId";
                 $params = array(
                     ':name' => $name,
@@ -116,7 +119,7 @@ class Products extends API
 
                     $notificationOperation = "modificado" . " " . $product->name;
                     $notificationMessage = $this->buildMessage($notificationOperation, $authorName);
-                    $notification->buildDataMessage($product, 'PUT', $notificationMessage, $this->db);
+                    $notification->buildDataMessage($product, 'PUT', $notificationMessage, $this->db, $originalData);
                 }
 
                 $res = json_encode($response);
@@ -130,6 +133,10 @@ class Products extends API
             $message = Utils::buildError('saveProduct', $e, $this->db);
             $this->response($message, 500);
         }
+    }
+
+    private function getProductSummary($product) {
+        return $product->quantity . " de " . trim($product->name) . " (" . trim($product->comment) . ")";
     }
 
     // Checks or unckecks a product
@@ -206,6 +213,7 @@ class Products extends API
             $productId = $params[4];
             $authorId = $params[5];
             $product = $this->getProduct($productId);
+            $originalData = $this->getProductSummary($product);
             $product->user = $authorId;
             $sql = "DELETE FROM ingredients WHERE ingredientId = :productId";
             $params = array(':productId' => $productId);
@@ -214,7 +222,7 @@ class Products extends API
 
             if ($query) {
                 $notification = new Message();
-                $notification->buildDataMessage($product, 'DELETE', '', $this->db);
+                $notification->buildDataMessage($product, 'DELETE', '', $this->db, $originalData);
 
                 $this->getProducts('');
             }

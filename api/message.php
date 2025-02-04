@@ -9,11 +9,12 @@ class Message extends API
         $this->token = $this->getToken()->access_token;
     }
 
-    public function buildDataMessage($object, $operation, $notificationMessage, $db)
+    public function buildDataMessage($object, $operation, $notificationMessage, $db, $originalData = '')
     {
         $data = $this->getMessageData($object, $operation);
         $additionaldata['firebaseSent'] = 0;
         $additionaldata['remoteAddr'] = $_SERVER['REMOTE_ADDR'];
+        $additionaldata['originalData'] = $originalData;
         $additionaldata['id'] = 0;
         $additionaldata['id'] = $this->logOperation($data, $additionaldata, $db);
 
@@ -59,6 +60,53 @@ class Message extends API
             'isChecked' => Utils::ensureNotNull($product->isChecked),
             'user' => Utils::ensureNotNull($product->user)
         );
+    }
+
+    private function logOperation($data, $additionalData, $db) {
+        try {
+            $id = $additionalData['id'];
+            $user = strlen($data['user'] ?? '') != 0 ? $data['user'] : 6; // Default user
+            $productId = $data['productId'];
+            $name = $data['name'];
+            $code = $this->getOperationCode($data['operation']);
+            $firebaseSent = $additionalData['firebaseSent'];
+            $remoteAddr = $additionalData['remoteAddr'];
+            $originalData = $additionalData['originalData'];
+
+            $request = $db->prepare('CALL HistoricSave(?, ?, ?, ?, ?, ?, ?, ?)');
+            $request->bindParam(1, $id);
+            $request->bindParam(2, $user);
+            $request->bindParam(3, $productId);
+            $request->bindParam(4, $name);
+            $request->bindParam(5, $code);
+            $request->bindParam(6, $firebaseSent);
+            $request->bindParam(7, $remoteAddr);
+            $request->bindParam(8, $originalData);
+     
+            $request->execute();
+            return Utils::getLastInsertedId($db);
+        } catch (PDOException $e) {
+            $message = Utils::buildError('PDO logOperation', $e, $db);
+            $this->response($message, 500);
+        } catch (Exception $e) {
+            $message = Utils::buildError('logOperation', $e, $db);
+            $this->response($message, 500);
+        }
+    }
+
+    private function getOperationCode($operation) {
+        // operationId meanings: 1->create, 2->update, 3->check, 4->uncheck, 5->delete
+        // operations: POST->1, PUT->2, PATCH1->3, PATCH0->4, DELETE->5
+        $code = 0;
+        switch ($operation) {
+            case 'POST': $code = 1; break;
+            case 'PUT': $code = 2; break;
+            case 'PATCH0': $code = 3; break; 
+            case 'PATCH1': $code = 4; break;
+            case 'DELETE': $code = 5; break;
+            default: break;
+        }
+        return $code;
     }
 
     private function sendRequest($data)
@@ -135,58 +183,6 @@ class Message extends API
         $responseText = file_get_contents(Config::$FIREBASE_TOKEN, false, $context);
 
         return json_decode($responseText);
-    }
-
-    private function logOperation($data, $additionalData, $db) {
-        try {
-            $id = $additionalData['id'];
-            $newId = 0;
-            $user = strlen($data['user'] ?? '') != 0 ? $data['user'] : 6; // Default user
-            $productId = $data['productId'];
-            $name = $data['name'];
-            $code = $this->getOperationCode($data['operation']);
-            $firebaseSent = $additionalData['firebaseSent'];
-            $remoteAddr = $additionalData['remoteAddr'];
-
-            $request = $db->prepare('CALL HistoricSave(?, ?, ?, ?, ?, ?, ?)');
-            $request->bindParam(1, $id);
-            $request->bindParam(2, $user);
-            $request->bindParam(3, $productId);
-            $request->bindParam(4, $name);
-            $request->bindParam(5, $code);
-            $request->bindParam(6, $firebaseSent);
-            $request->bindParam(7, $remoteAddr);
-     
-            $request->execute();
-            $sql = 'SELECT LAST_INSERT_ID() AS id';
-            $query = $db->prepare($sql);
-            $query->execute();
-            if ($query->rowCount() > 0) {
-                $newId = $query->fetchAll();
-            }
-            return $newId[0]->id;
-        } catch (PDOException $e) {
-            $message = Utils::buildError('PDO logOperation', $e, $db);
-            $this->response($message, 500);
-        } catch (Exception $e) {
-            $message = Utils::buildError('logOperation', $e, $db);
-            $this->response($message, 500);
-        }
-    }
-
-    private function getOperationCode($operation) {
-        // operationId meanings: 1->create, 2->update, 3->check, 4->uncheck, 5->delete
-        // operations: POST->1, PUT->2, PATCH1->3, PATCH0->4, DELETE->5
-        $code = 0;
-        switch ($operation) {
-            case 'POST': $code = 1; break;
-            case 'PUT': $code = 2; break;
-            case 'PATCH0': $code = 3; break; 
-            case 'PATCH1': $code = 4; break;
-            case 'DELETE': $code = 5; break;
-            default: break;
-        }
-        return $code;
     }
 }
 
