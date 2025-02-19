@@ -77,7 +77,7 @@ class Products extends API
             $name = Utils::getValue('name', $isPost);
             $authorId = Utils::getValue('authorId', $isPost);
             $authorName = Utils::getValue('authorName', $isPost);
-            $quantity = Utils::getValue('quantity', $isPost);
+            $quantity = Utils::getValue('quantity', $isPost) ?? 1;
             $comment = Utils::getValue('comment', $isPost);
             $originalData = '';
             $productId = -1;
@@ -136,7 +136,14 @@ class Products extends API
     }
 
     private function getProductSummary($product) {
-        return $product->quantity . " de " . trim($product->name) . " (" . trim($product->comment) . ")";
+        $quantity = $product->quantity ?? "1";
+        $name = $product->name ?? "algo";
+        $comment = $product->comment ?? "";
+        $message = $quantity . " de " . trim($name);
+        if (empty($comment) == false) {
+            $message = $message . " (" . trim($comment) . ")";
+        }
+        return $message;
     }
 
     // Checks or unckecks a product
