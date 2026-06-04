@@ -38,9 +38,13 @@ class Meals extends API
             if (isset($_GET['mealId'])) {
                 $mealId = $_GET['mealId'];
             }
+            $isBreakfast = null;
+            if (isset($_GET['isBreakfast'])) {
+                $isBreakfast = $_GET['isBreakfast'];
+            }
 
             if ($mealId == null) {
-                $this->getMealList();
+                $this->getMealList($isBreakfast);
             } else {
                 $this->getMealData($mealId);
             }
@@ -78,11 +82,12 @@ class Meals extends API
         }
     }
 
-    public function getMealList()
+    public function getMealList($isBreakfast = null)
     {
         $meals = [];
-        $request = $this->db->prepare('CALL MealData()');
-
+        $breakfast = $isBreakfast !== null ? (int)$isBreakfast : 0;
+        $request = $this->db->prepare('CALL MealData(?)');
+        $request->bindValue(1, $breakfast);
         $request->execute();
 
         if ($request->rowCount() > 0) {
@@ -176,14 +181,16 @@ class Meals extends API
             $authorId = Utils::getValue('authorId', $isPost);
             $name = Utils::getValue('name', $isPost);
             $isLunch = Utils::getValue('isLunch', $isPost);
+            $isBreakfast = Utils::getValue('isBreakfast', $isPost);
             $isLunch = $isLunch == 2 ? 0 : 1;
+            $isBreakfast = $isBreakfast == null ? 0 : 1;
             $mealId = -1;
 
             $notification = new Message();
 
             if ($isPost) {
-                $sql = 'INSERT INTO meals (name, isLunch, isChecked) VALUES (:name, :isLunch, 0)';
-                $params = array(':name' => $name, ':isLunch' => $isLunch);
+                $sql = 'INSERT INTO meals (name, isLunch, isChecked, isBreakfast) VALUES (:name, :isLunch, 0, :isBreakfast)';
+                $params = array(':name' => $name, ':isLunch' => $isLunch, ':isBreakfast' => $isBreakfast);
             } else {
                 $mealId = Utils::getValue('mealId', $isPost);
                 $params = array(':name' => $name, ':isLunch' => $isLunch, ':mealId' => $mealId);
@@ -197,7 +204,8 @@ class Meals extends API
                 $response = array(
                     'mealId' => $mealId,
                     'name' => $name,
-                    'isLunch' => $isLunch);
+                    'isLunch' => $isLunch,
+                    'isBreakfast' => $isBreakfast);
 
                 $res = json_encode($response);
                 $this->response($res, 200);
@@ -218,6 +226,7 @@ class Meals extends API
             $mealId = Utils::getValue('mealId', false);
             $check = Utils::getPATCHValue('check');
             $isLunch = Utils::getValue('isLunch', false);
+            $isBreakfast = Utils::getValue('isBreakfast', false);
             $oldRequest = $isLunch == null;
             $isLunch = $isLunch == 2 ? 1 : 0;
 
@@ -247,7 +256,7 @@ class Meals extends API
             if ($query) {
                 $notification = new Message();
                 $notification->buildNoDataMessage($authorId, Config::$MEAL_TOPIC);
-                $this->getMealList();
+                $this->getMealList($isBreakfast);
             }
             $this->response('', 204);
         } catch (PDOException $e) {

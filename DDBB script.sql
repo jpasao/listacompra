@@ -129,6 +129,7 @@ CREATE TABLE `meals` (
   `name` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `isLunch` tinyint(4) NOT NULL DEFAULT 1,
   `isChecked` tinyint(4) NOT NULL DEFAULT 1,
+  `isBreakfast` TINYINT(4) NOT NULL DEFAULT 0, 
   PRIMARY KEY (`mealId`)
 ) ENGINE=InnoDB AUTO_INCREMENT=107 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -657,7 +658,7 @@ DELIMITER ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `MealData`()
 BEGIN
-	SELECT M.mealId, M.name, M.isLunch, M.isChecked 
+	SELECT M.mealId, M.name, M.isLunch, M.isChecked, M.isBreakfast
 	FROM meals M		
 	ORDER BY isLunch DESC, isChecked, name;	
 END ;;
