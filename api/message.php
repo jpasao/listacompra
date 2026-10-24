@@ -82,7 +82,7 @@ class Message extends API
             $request->bindParam(6, $firebaseSent);
             $request->bindParam(7, $remoteAddr);
             $request->bindParam(8, $originalData);
-     
+
             $request->execute();
             return Utils::getLastInsertedId($db);
         } catch (PDOException $e) {
@@ -130,7 +130,7 @@ class Message extends API
         if ($return->response) {
             $response = true;
         }
-        curl_close($ch);
+
         return $response;
     }
 
