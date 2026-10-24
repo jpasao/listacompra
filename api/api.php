@@ -22,8 +22,7 @@ class API extends REST
         // Set options for PDO
         $options = array(
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
         );
         $dbName = Utils::CheckWhitelist() ? Config::$DB_NAME : Config::$DB_NAME_EMPTY;
         Config::$DB_NAME_CHOSEN = $dbName;
