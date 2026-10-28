@@ -182,15 +182,17 @@ class Meals extends API
             $name = Utils::getValue('name', $isPost);
             $isLunch = Utils::getValue('isLunch', $isPost);
             $isBreakfast = Utils::getValue('isBreakfast', $isPost);
-            $isLunch = $isLunch == 2 ? 0 : 1;
+            $isSnack = Utils::getValue('isSnack', $isPost);
+            $isLunch = $isLunch == 2 ? 1 : 0;
+            $isSnack = $isSnack == 2 ? 1 : 0;
             $isBreakfast = $isBreakfast == null ? 0 : 1;
             $mealId = -1;
 
             $notification = new Message();
 
             if ($isPost) {
-                $sql = 'INSERT INTO meals (name, isLunch, isChecked, isBreakfast) VALUES (:name, :isLunch, 0, :isBreakfast)';
-                $params = array(':name' => $name, ':isLunch' => $isLunch, ':isBreakfast' => $isBreakfast);
+                $sql = 'INSERT INTO meals (name, isLunch, isChecked, isBreakfast, isSnack) VALUES (:name, :isLunch, 0, :isBreakfast, :isSnack)';
+                $params = array(':name' => $name, ':isLunch' => $isLunch, ':isBreakfast' => $isBreakfast, ':isSnack' => $isSnack);
             } else {
                 $mealId = Utils::getValue('mealId', $isPost);
                 $params = array(':name' => $name, ':isLunch' => $isLunch, ':mealId' => $mealId);
@@ -205,7 +207,8 @@ class Meals extends API
                     'mealId' => $mealId,
                     'name' => $name,
                     'isLunch' => $isLunch,
-                    'isBreakfast' => $isBreakfast);
+                    'isBreakfast' => $isBreakfast,
+                    'isSnack' => $isSnack);
 
                 $res = json_encode($response);
                 $this->response($res, 200);
@@ -227,8 +230,9 @@ class Meals extends API
             $check = Utils::getPATCHValue('check');
             $isLunch = Utils::getValue('isLunch', false);
             $isBreakfast = Utils::getValue('isBreakfast', false);
-            $oldRequest = $isLunch == null;
+            $isSnack = Utils::getValue('isSnack', false);
             $isLunch = $isLunch == 2 ? 1 : 0;
+            $isSnack = $isSnack == 2 ? 1 : 0;
 
             if ($check == null) {
                 $check = 1;
@@ -243,13 +247,9 @@ class Meals extends API
             }
             $mealId = (int)$mealId;
 
-            if ($oldRequest){
-                $sql = "UPDATE meals SET isChecked = :check WHERE mealId = :mealId";
-                $params = array(':check' => $check, ':mealId' => $mealId);
-            } else {
-                $sql = "UPDATE meals SET isChecked = :check, isLunch = :isLunch WHERE mealId = :mealId";
-                $params = array(':check' => $check, ':isLunch' => $isLunch, ':mealId' => $mealId);
-            }
+            $sql = "UPDATE meals SET isChecked = :check, isLunch = :isLunch, isSnack = :isSnack WHERE mealId = :mealId";
+            $params = array(':check' => $check, ':isLunch' => $isLunch, ':isSnack' => $isSnack, ':mealId' => $mealId);
+
             $query = $this->db->prepare($sql);
             $query->execute($params);
 
