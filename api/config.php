@@ -10,7 +10,7 @@ class Config
 	public static $IMG_DIR;
 	public static function init()
 	{
-		if (self::$ENVIRONMENT == 'development' || self::$ENVIRONMENT == 'dev') {
+		if (self::$ENVIRONMENT == 'development') {
 			error_reporting(E_ALL);
 			ini_set("display_errors", 1);
 		}
@@ -22,7 +22,7 @@ class Config
 		$IMG_DIR = self::$ROOT . 'images';
 	}
 	
-	public static $ENVIRONMENT = 'development';
+	public static $ENVIRONMENT = 'production';
 	
 	// App constants
 	public static $URL_PUBLIC_FOLDER = 'public';
@@ -57,5 +57,7 @@ class Config
 	public static $MAIL_FROM = '***';
 	public static $MAIL_TO = '***';
 	public static $MAIL_LOCAL_SUBJECT = 'Ha ocurrido un error en el api';
+	public static $MAIL_USERADDRESS = '***';
+
 	public static $MAIL_APP_SUBJECT = 'Ha ocurrido un error en la app';
 }
