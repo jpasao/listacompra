@@ -53,12 +53,12 @@ class Message extends API
     private function getMessageData($product, $operation) {
         return array(
             'operation' => $operation,
-            'productId' => Utils::ensureNotNull($product->id),
+            'productId' => '' . Utils::ensureNotNull($product->id),
             'name' => Utils::ensureNotNull($product->name),
-            'quantity' => Utils::ensureNotNull($product->quantity),
-            'comment' => Utils::ensureNotNull($product->comment),
+            'quantity' => '' . Utils::ensureNotNull($product->quantity),
+            'comment' =>  Utils::ensureNotNull($product->comment),
             'isChecked' => Utils::ensureNotNull($product->isChecked),
-            'user' => Utils::ensureNotNull($product->user)
+            'user' => '' .Utils::ensureNotNull($product->user)
         );
     }
 
@@ -127,7 +127,7 @@ class Message extends API
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
         $return->response = curl_exec($ch);
-        if ($return->response) {
+        if (str_contains($return->response, 'name')) {
             $response = true;
         }
 
