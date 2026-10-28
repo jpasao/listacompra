@@ -20,8 +20,14 @@ class Utils
         if ($isPost) {
             $arr = $_POST;
         } else {
-            parse_str(file_get_contents(self::$phpInput), $_PUT);
-            $arr = $_PUT;
+            if (Config::$ENVIRONMENT == 'development') {
+                $rawBody = file_get_contents(self::$phpInput);
+                $data = json_decode($rawBody ?: '{}', true, 512);
+                $arr = $data;
+            } else {
+                parse_str(file_get_contents(self::$phpInput), $_PUT);
+                $arr = $_PUT;
+            }
         }
 
         if (isset($arr[$varName]) && empty($arr[$varName]) === false) {
@@ -33,11 +39,16 @@ class Utils
     public static function getPATCHValue($varName)
     {
         $res = null;
+        if (Config::$ENVIRONMENT == 'development') {
+            $rawBody = file_get_contents(self::$phpInput);
+            $data = json_decode($rawBody ?: '{}', true, 512);
+        } else {
+            parse_str(file_get_contents(self::$phpInput), $_PATCH);
+            $data = $_PATCH;
+        }
 
-        parse_str(file_get_contents(self::$phpInput), $_PATCH);
-
-        if (isset($_PATCH[$varName]) && empty($_PATCH[$varName]) === false) {
-            $res = $_PATCH[$varName];
+        if (isset($data[$varName]) && empty($data[$varName]) === false) {
+            $res = $data[$varName];
         }
         return $res;
     }
